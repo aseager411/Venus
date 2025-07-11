@@ -1,0 +1,59 @@
+molecule,group,file,short_molecule
+N-methylpyrrole,Misc,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Misc/N-methylpyrrole_250C_070725.txt,N-methylpyrrole
+246-Trimethylpyridine,Misc,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Misc/246-Trimethylpyridine_250C_070725.txt,246-Trimethylpyridine
+Nile red,Misc,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Misc/Nile red_250C_070725.txt,Nile red
+Methylcyclopentane,Misc,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Misc/Methylcyclopentane_250C_070725.txt,Methylcyclopentane
+Cyclopentane,Misc,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Misc/Cyclopentane_250C_070725.txt,Cyclopentane
+Pyridine,Misc,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Misc/Pyridine_250C_070725.txt,Pyridine
+1234-tetrafluorobenzene,Misc,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Misc/1234-tetrafluorobenzene_250C_070725.txt,1234-tetrafluorobenzene
+Asn,Amino Acids,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Amino Acids/Asn_250C_070325.txt,Asn
+Arg,Amino Acids,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Amino Acids/Arg_250C_070325.txt,Arg
+Ala,Amino Acids,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Amino Acids/Ala_250C_070325.txt,Ala
+Glu,Amino Acids,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Amino Acids/Glu_250C_070325.txt,Glu
+Leu,Amino Acids,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Amino Acids/Leu_250C_070325.txt,Leu
+Phe,Amino Acids,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Amino Acids/Phe_250C_070325.txt,Phe
+Cys,Amino Acids,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Amino Acids/Cys_250C_070325.txt,Cys
+Ser,Amino Acids,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Amino Acids/Ser_250C_070325.txt,Ser
+Ile,Amino Acids,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Amino Acids/Ile_250C_070325.txt,Ile
+Gln,Amino Acids,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Amino Acids/Gln_250C_070325.txt,Gln
+Met,Amino Acids,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Amino Acids/Met_250C_070325.txt,Met
+Trp,Amino Acids,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Amino Acids/Trp_250C_070325.txt,Trp
+Asp,Amino Acids,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Amino Acids/Asp_250C_070325.txt,Asp
+Val,Amino Acids,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Amino Acids/Val_250C_070325.txt,Val
+Gly,Amino Acids,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Amino Acids/Gly_250C_070325.txt,Gly
+Pro,Amino Acids,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Amino Acids/Pro_250C_070325.txt,Pro
+Tyr,Amino Acids,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Amino Acids/Tyr_250C_070325.txt,Tyr
+Lys,Amino Acids,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Amino Acids/Lys_250C_070325.txt,Lys
+His,Amino Acids,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Amino Acids/His_250C_070325.txt,His
+Thr,Amino Acids,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Amino Acids/Thr_250C_070325.txt,Thr
+Benzene,PAHs,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/PAHs/Benzene_250C_070725.txt,Benzene
+Benzenesulfonic acid,PAHs,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/PAHs/Benzenesulfonic acid_250C_070725.txt,Benzenesulfonic acid
+Pyrene,PAHs,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/PAHs/Pyrene_250C_070725.txt,Pyrene
+Phenanthrene,PAHs,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/PAHs/Phenanthrene_250C_070925.txt,Phenanthrene
+P2,Porphyrns,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Porphyrns/P2_250C_070325.txt,P2
+ZnPh,Porphyrns,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Porphyrns/ZnPh_250C_070325.txt,ZnPh
+P1,Porphyrns,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Porphyrns/P1_250C_070325.txt,P1
+Purine,Bases,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Bases/Purine_250C_070925.txt,Purine
+Thymine,Bases,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Bases/Thymine_061125.txt,Thymine
+2-methoxynaphthalene,Bases,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Bases/2-methoxynaphthalene_250C_070925.txt,2-methoxynaphthalene
+Adenine,Bases,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Bases/Adenine_061125.txt,Adenine
+Hypoxanthine,Bases,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Bases/Hypoxanthine_250C_070925.txt,Hypoxanthine
+Cytosine,Bases,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Bases/Cytosine_061125.txt,Cytosine
+22-bipyridyl,Bases,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Bases/22-bipyridyl_250C_070925.txt,22-bipyridyl
+Guanine,Bases,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Bases/Guanine_061125.txt,Guanine
+213-Benzothiadiazole,Bases,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Bases/213-Benzothiadiazole_250C_070925.txt,213-Benzothiadiazole
+Pyrimidine,Bases,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Bases/Pyrimidine_250C_070925.txt,Pyrimidine
+1-methoxy-3-methylbenzene,Bases,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Bases/1-methoxy-3-methylbenzene_250C_070725.txt,1-methoxy-3-methylbenzene
+Biphenyl,Bases,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Bases/Biphenyl_250C_070925.txt,Biphenyl
+Xanthine,Bases,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Bases/Xanthine_250C_070925.txt,Xanthine
+26-Diaminopurine,Bases,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Bases/26-Diaminopurine_250C_070925.txt,26-Diaminopurine
+1-Chloro-3-methoxybenzene,Bases,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Bases/1-Chloro-3-methoxybenzene_250C_070725.txt,1-Chloro-3-methoxybenzene
+Trimethyloctadecylammonium bromide,Lipids,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Lipids/Trimethyloctadecylammonium bromide_250C_070925.txt,Trimethyloctadecylammonium bromide
+Sodium n-decyl sulfate,Lipids,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Lipids/Sodium n-decyl sulfate_250C_070925.txt,Sodium n-decyl sulfate
+Decyltrimethylammonium bromide,Lipids,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Lipids/Decyltrimethylammonium bromide_250C_070725.txt,Decyltrimethylammonium bromide
+Sodium n-octadecyl sulfate,Lipids,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Lipids/Sodium n-octadecyl sulfate_250C_070925.txt,Sodium n-octadecyl sulfate
+Dodecylamine,Lipids,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Lipids/Dodecylamine_250C_070725.txt,Dodecylamine
+Tridecanoic acid,Lipids,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Lipids/Tridecanoic acid_250C_070725.txt,Tridecanoic acid
+Dodecanoic acid,Lipids,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Lipids/Dodecanoic acid_250C_070725.txt,Dodecanoic acid
+Dodecyltrimethylammonium bromide,Lipids,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Lipids/Dodecyltrimethylammonium bromide_250C_070725.txt,Dodecyltrimethylammonium bromide
+16-diphenyl-135-hexatriene,Polydienes,/Users/alexseager/Desktop/Summer Work 2025/MS_Data/Individual/Polydienes/16-diphenyl-135-hexatriene_250C_070725.txt,16-diphenyl-135-hexatriene
