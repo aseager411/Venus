@@ -28,8 +28,8 @@ import numpy as np
 
 # Defining global parameters
 # Data parameters
-NUMMOLECULES = 50
-NUMWAVELENGTHS = 500
+NUMMOLECULES = 100
+NUMWAVELENGTHS = 100
 SPARSITY = 0.98
 MAXSIMILARITY = 0.5
 

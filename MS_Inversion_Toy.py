@@ -7,12 +7,13 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.cm as cm
+from joblib import Parallel, delayed
 from itertools import combinations
 from sklearn.linear_model import Lasso
 from sklearn.linear_model import LassoCV
 from sklearn.metrics import r2_score
 from abess.linear import LinearRegression
-import cvxpy as cp
+from scipy.optimize import lsq_linear
 
 # importing generated data from the data generation file
 from MS_Model_Current import (
@@ -40,53 +41,69 @@ from ABESS import (
 # ask how to optimize the instrument - how many wavelengths, what resolution
 
 
-# Generate all possible molecule combinations and choose the best linear fit with a penalty on the number of terms
-#
-# Arguments: matrix -> the matrix of molecular spectra
-#            vector spectra -> the sample spectrum which in a linear combo of matrix columns
-# Returns:   vector best_combo -> the guess for which molecules at what concentrations made up the sample
-#            vector best_factors -> the concentrations associated with the guessed molecules
-#            float best_score -> the AIC/BIC/MDL associated with the models choice. lower is better
-def L_Zero(matrix, spectra, criterion='AIC'):
+
+
+from scipy.optimize import lsq_linear
+from itertools import combinations
+from joblib import Parallel, delayed
+import numpy as np
+
+# Helper for evaluating one combination
+def evaluate_combo(cols, matrix, spectra, criterion, n_obs, n_vars):
+    subM = matrix[:, cols]
+
+    # Non-negative least squares fit
+    result = lsq_linear(subM, spectra, bounds=(0, np.inf), method='trf')
+    x_hat = result.x
+    y_hat = subM @ x_hat
+    rss = np.sum((spectra - y_hat) ** 2)
+
+    if rss <= 0:
+        return None  # skip degenerate fit
+
+    k = len(cols)
+
+    if criterion == 'AIC':
+        score = 2 * k + n_obs * np.log(rss / n_obs)
+    elif criterion == 'BIC':
+        score = k * np.log(n_obs) + n_obs * np.log(rss / n_obs)
+    elif criterion == 'MDL':
+        score = k * np.log(n_vars) + np.log(rss + 1e-8)
+    else:
+        raise ValueError("Criterion must be 'AIC', 'BIC', or 'MDL'")
+
+    return (score, cols, x_hat)
+
+# L_Zero function with parallelized evaluation
+def L_Zero(matrix, spectra, criterion='AIC', max_support=4, n_jobs=-1):
+    best_score = np.inf
     best_combo = None
-    best_score = np.inf  # Lower is better
     best_factors = None
 
-    n_obs = matrix.shape[0]  # number of wavelengths
-    n_vars = matrix.shape[1]  # number of molecules
+    n_obs, n_vars = matrix.shape
 
-    for r in range(1, n_vars + 1):
-        for cols in combinations(range(n_vars), r):
-            subM = matrix[:, cols]
+    for r in range(1, max_support + 1):
+        combos = list(combinations(range(n_vars), r))
 
-            x_hat, residuals, rank, s = np.linalg.lstsq(subM, spectra, rcond=None)
+        # Parallel evaluation
+        results = Parallel(n_jobs=n_jobs)(
+            delayed(evaluate_combo)(cols, matrix, spectra, criterion, n_obs, n_vars)
+            for cols in combos
+        )
 
-            # compute residuals manually if necessary
-            if residuals.size > 0:
-                rss = residuals[0]
-            else:
-                y_hat = subM @ x_hat
-                rss = np.sum((spectra - y_hat) ** 2)
+        # Find best scoring model
+        for res in results:
+            if res is not None:
+                score, cols, x_hat = res
+                if score < best_score:
+                    best_score = score
+                    best_combo = cols
+                    best_factors = x_hat
 
-            # compute AIC, BIC, or MDL
-            k = len(cols)  # number of fitted parameters
-            if rss <= 0:
-                continue  # skip degenerate fits
-            if criterion == 'AIC':
-                score = 2 * k + n_obs * np.log(rss / n_obs)
-            elif criterion == 'BIC':
-                score = k * np.log(n_obs) + n_obs * np.log(rss / n_obs)
-            elif criterion == 'MDL':  # Doesn't work very well
-                score = k * np.log(n_vars) + np.log(rss + 1e-8)
-            else:
-                raise ValueError("Criterion must be 'AIC', 'BIC', or 'MDL'")
+    # Return result as list of (index, coefficient) tuples
+    result = list(zip(best_combo, best_factors)) if best_combo else []
+    return result
 
-            if score < best_score:
-                best_score = score
-                best_combo = cols
-                best_factors = x_hat
-
-    return best_combo, best_factors, best_score
 
 
 # Linear fit with L1 term which pulls coefficients to zero
@@ -387,7 +404,7 @@ def Model_Test(spectralMatrix, a):
 def main():
    s, molecules = GetSampleSpectrum(3, spectralMatrix)
    print("true molecules: ", molecules)
-   guess = ABESS(spectralMatrix, s, 10)
+   guess = L_Zero(spectralMatrix, s, "BIC")
    print("guesses: ", guess)
 
 if __name__ == "__main__":

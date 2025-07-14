@@ -93,62 +93,139 @@ def ABESS_Test(matrix, spectra, sMax, df):
     return results
 
 
+def L_Zero_test(matrix, spectra, df):
+    x_hat = L_Zero(matrix, spectra)
+    threshold = 1e-4  # Threshold to suppress numerical noise
+
+    # Check if ABESS returned tuple list [(index, coef), ...]
+    if isinstance(x_hat, list) and all(isinstance(x, tuple) for x in x_hat):
+        results = {
+            df.columns[i]: coef
+            for i, coef in x_hat
+            if abs(coef) > threshold
+        }
+    else:
+        # Assume x_hat is a full-length vector
+        results = {
+            df.columns[i]: x_hat[i]
+            for i in range(len(x_hat))
+            if abs(x_hat[i]) > threshold
+        }
+
+    return results
 
 def main():
-    individual = "/Users/alexseager/Desktop/Summer Work 2025/Code/mass_spectra_individual.csv"
+    individual = "mass_spectra_individual.csv"
     spectralMatrix, df1 = LoadRealMatrix(individual)
     individual_names = df1.columns.tolist()
 
-    mixtures = "/Users/alexseager/Desktop/Summer Work 2025/Code/mass_spectra_mixtures.csv"
+    mixtures = "mass_spectra_mixtures.csv"
     samples, df2 = LoadRealMatrix(mixtures)
     mixture_names = df2.columns.tolist()
 
-    print("Test with ABESS")
-    print("")
-    print("True molecules: Pro, Ser, Thr")
+    # individual = "/Users/alexseager/Desktop/Summer Work 2025/Code/mass_spectra_individual.csv"
+    # spectralMatrix, df1 = LoadRealMatrix(individual)
+    # individual_names = df1.columns.tolist()
 
-    spectra1, _ = GetSample(["Pro", "Ser", "Thr"], df1)
-    predicted = ABESS_Test(spectralMatrix, spectra1, 5, df1)
-    print("predictions given fake mix: ", predicted)
+    # mixtures = "/Users/alexseager/Desktop/Summer Work 2025/Code/mass_spectra_mixtures.csv"
+    # samples, df2 = LoadRealMatrix(mixtures)
+    # mixture_names = df2.columns.tolist()
 
-    spectra2, _ = GetSample(["ProSerThr"], df2)
-    predicted = ABESS_Test(spectralMatrix, spectra2, 5, df1)
-    print("predictions given real mix: ", predicted)
 
-    # Test on Ala, Arg, Glu, Gly mix with ABESS
-    print("")
-    print("True molecules: Ala, Arg, Glu, Gly")
+    # print("True molecules: 1-chloro-3-methoxybenzene + Benzenesulfonic acid + Dodecyltrimethylammonium bromide")
+    # print("")
 
-    spectra3, _ = GetSample(["Ala", "Arg", "Glu", "Gly"], df1)
-    predicted = ABESS_Test(spectralMatrix, spectra3, 5, df1)
-    print("predictions given fake mix: ", predicted)
+    # spectra1, _ = GetSample(["1-Chloro-3-methoxybenzene", "Benzenesulfonic acid", "Dodecyltrimethylammonium bromide"], df1)
+    # predicted = L_Zero_test(spectralMatrix, spectra1, df1)
+    # print("predictions given fake mix: ", predicted)
 
-    spectra4, _ = GetSample(["AlaArgGluGly"], df2)
-    predicted = ABESS_Test(spectralMatrix, spectra4, 5, df1)
-    print("predictions given real mix: ", predicted)
+    # spectra2, _ = GetSample(["1-chloro-3-methoxybenzene + Benzenesulfonic acid + Dodecyltrimethylammonium bromide"], df2)
+    # predicted = L_Zero_test(spectralMatrix, spectra2, df1)
+    # print("predictions given real mix: ", predicted)
 
     print("")
     print("True molecules: Benzenesulfonic acid + 16-diphenyl-135-hexatriene + N-methylpyrrole + Pyrene")
 
     spectra1, _ = GetSample(["Benzenesulfonic acid", "16-diphenyl-135-hexatriene", "N-methylpyrrole", "Pyrene"], df1)
-    predicted = ABESS(spectralMatrix, spectra1, 5, df1)
+    predicted = L_Zero_test(spectralMatrix, spectra1, df1)
     print("predictions given fake mix: ", predicted)
 
     spectra2, _ = GetSample(["Benzenesulfonic acid + DPH(1,6-Diphenyl-1,3,5-hexatriene) + N-methypyrrole + Pyrene"], df2)
-    predicted = ABESS(spectralMatrix, spectra2, 5, df1)
+    predicted = L_Zero_test(spectralMatrix, spectra2, df1)
     print("predictions given real mix: ", predicted)
 
-    # print("Testing with lasso: ")
-    # print("True molecules: 1-chloro-3-methoxybenzene + Benzenesulfonic acid + Dodecyltrimethylammonium bromide")
+    #Test on Pro, Ser, Thr mix with L0
+    # print("Test with L0")
     # print("")
+    # print("True molecules: Pro, Ser, Thr")
 
-    # spectra1, _ = GetSample(["1-chloro-3-methoxybenzene", "Benzenesulfonic acid", "Dodecyltrimethylammonium bromide"], df1)
-    # predicted = Lasso_Test(spectralMatrix, spectra1, 1000000, df1)
+    # spectra1, _ = GetSample(["Pro", "Ser", "Thr"], df1)
+    # predicted = L_Zero_test(spectralMatrix, spectra1, df1)
     # print("predictions given fake mix: ", predicted)
 
-    # spectra2, _ = GetSample(["1-chloro-3-methoxybenzene + Benzenesulfonic acid + Dodecyltrimethylammonium bromide"], df2)
-    # predicted = Lasso_Test(spectralMatrix, spectra2, 1000000000, df1)
+    # spectra2, _ = GetSample(["ProSerThr"], df2)
+    # predicted = L_Zero_test(spectralMatrix, spectra2, df1)
     # print("predictions given real mix: ", predicted)
+
+    # #Test on Ala, Arg, Glu, Gly mix with L0 
+    # print("")
+    # print("True molecules: Ala, Arg, Glu, Gly")
+
+    # spectra3, _ = GetSample(["Ala", "Arg", "Glu", "Gly"], df1)
+    # predicted = L_Zero_test(spectralMatrix, spectra3, df1)
+    # print("predictions given fake mix: ", predicted)
+
+    # spectra4, _ = GetSample(["AlaArgGluGly"], df2)
+    # predicted = L_Zero_test(spectralMatrix, spectra4, df1)
+    # print("predictions given real mix: ", predicted)
+
+    # # Test on Pro, Ser, Thr mix with ABESS
+    # print("Test with ABESS")
+    # print("")
+    # print("True molecules: Pro, Ser, Thr")
+
+    # spectra1, _ = GetSample(["Pro", "Ser", "Thr"], df1)
+    # predicted = ABESS_Test(spectralMatrix, spectra1, 5, df1)
+    # print("predictions given fake mix: ", predicted)
+
+    # spectra2, _ = GetSample(["ProSerThr"], df2)
+    # predicted = ABESS_Test(spectralMatrix, spectra2, 5, df1)
+    # print("predictions given real mix: ", predicted)
+
+    # # Test on Ala, Arg, Glu, Gly mix with ABESS
+    # print("")
+    # print("True molecules: Ala, Arg, Glu, Gly")
+
+    # spectra3, _ = GetSample(["Ala", "Arg", "Glu", "Gly"], df1)
+    # predicted = ABESS_Test(spectralMatrix, spectra3, 5, df1)
+    # print("predictions given fake mix: ", predicted)
+
+    # spectra4, _ = GetSample(["AlaArgGluGly"], df2)
+    # predicted = ABESS_Test(spectralMatrix, spectra4, 5, df1)
+    # print("predictions given real mix: ", predicted)
+
+    # print("")
+    # print("True molecules: Benzenesulfonic acid + 16-diphenyl-135-hexatriene + N-methylpyrrole + Pyrene")
+
+    # spectra1, _ = GetSample(["Benzenesulfonic acid", "16-diphenyl-135-hexatriene", "N-methylpyrrole", "Pyrene"], df1)
+    # predicted = ABESS(spectralMatrix, spectra1, 5, df1)
+    # print("predictions given fake mix: ", predicted)
+
+    # spectra2, _ = GetSample(["Benzenesulfonic acid + DPH(1,6-Diphenyl-1,3,5-hexatriene) + N-methypyrrole + Pyrene"], df2)
+    # predicted = ABESS(spectralMatrix, spectra2, 5, df1)
+    # print("predictions given real mix: ", predicted)
+
+    print("Testing with ABESS: ")
+    print("True molecules: 1-chloro-3-methoxybenzene + Benzenesulfonic acid + Dodecyltrimethylammonium bromide")
+    print("")
+
+    spectra1, _ = GetSample(["1-Chloro-3-methoxybenzene", "Benzenesulfonic acid", "Dodecyltrimethylammonium bromide"], df1)
+    predicted = ABESS(spectralMatrix, spectra1, 5, df1)
+    print("predictions given fake mix: ", predicted)
+
+    spectra2, _ = GetSample(["1-chloro-3-methoxybenzene + Benzenesulfonic acid + Dodecyltrimethylammonium bromide"], df2)
+    predicted = ABESS(spectralMatrix, spectra2, 5, df1)
+    print("predictions given real mix: ", predicted)
 
 
     # print("Testing with lasso: ")
@@ -163,40 +240,40 @@ def main():
     # predicted = Lasso_Test(spectralMatrix, spectra2, 1000000000, df1)
     # print("predictions given real mix: ", predicted)
 
-    print("Testing with lasso: ")
-    print("")
-    print("True molecules: Pro, Ser, Thr")
+    # print("Testing with lasso: ")
+    # print("")
+    # print("True molecules: Pro, Ser, Thr")
 
-    spectra1, _ = GetSample(["Pro", "Ser", "Thr"], df1)
-    predicted = Lasso_Test(spectralMatrix, spectra1, 1000000, df1)
-    print("predictions given fake mix: ", predicted)
+    # spectra1, _ = GetSample(["Pro", "Ser", "Thr"], df1)
+    # predicted = Lasso_Test(spectralMatrix, spectra1, 1000000, df1)
+    # print("predictions given fake mix: ", predicted)
 
-    spectra2, _ = GetSample(["ProSerThr"], df2)
-    predicted = Lasso_Test(spectralMatrix, spectra2, 1000000000, df1)
-    print("predictions given real mix: ", predicted)
+    # spectra2, _ = GetSample(["ProSerThr"], df2)
+    # predicted = Lasso_Test(spectralMatrix, spectra2, 1000000000, df1)
+    # print("predictions given real mix: ", predicted)
 
-    # Test on Ala, Arg, Glu, Gly mix with lasso
-    print("")
-    print("True molecules: Ala, Arg, Glu, Gly")
+    # # Test on Ala, Arg, Glu, Gly mix with lasso
+    # print("")
+    # print("True molecules: Ala, Arg, Glu, Gly")
 
-    spectra3, _ = GetSample(["Ala", "Arg", "Glu", "Gly"], df1)
-    predicted = Lasso_Test(spectralMatrix, spectra3, 100, df1)
-    print("predictions given fake mix: ", predicted)
+    # spectra3, _ = GetSample(["Ala", "Arg", "Glu", "Gly"], df1)
+    # predicted = Lasso_Test(spectralMatrix, spectra3, 100, df1)
+    # print("predictions given fake mix: ", predicted)
 
-    spectra4, _ = GetSample(["AlaArgGluGly"], df2)
-    predicted = Lasso_Test(spectralMatrix, spectra4, 1, df1)
-    print("predictions given real mix: ", predicted)
+    # spectra4, _ = GetSample(["AlaArgGluGly"], df2)
+    # predicted = Lasso_Test(spectralMatrix, spectra4, 1, df1)
+    # print("predictions given real mix: ", predicted)
     
-    print("")
-    print("True molecules: Benzenesulfonic acid + 16-diphenyl-135-hexatriene + N-methylpyrrole + Pyrene")
+    # print("")
+    # print("True molecules: Benzenesulfonic acid + 16-diphenyl-135-hexatriene + N-methylpyrrole + Pyrene")
 
-    spectra1, _ = GetSample(["Benzenesulfonic acid", "16-diphenyl-135-hexatriene", "N-methylpyrrole", "Pyrene"], df1)
-    predicted = Lasso_Test(spectralMatrix, spectra1, 1000000, df1)
-    print("predictions given fake mix: ", predicted)
+    # spectra1, _ = GetSample(["Benzenesulfonic acid", "16-diphenyl-135-hexatriene", "N-methylpyrrole", "Pyrene"], df1)
+    # predicted = ABESS_Test(spectralMatrix, spectra1, 5, df1)
+    # print("predictions given fake mix: ", predicted)
 
-    spectra2, _ = GetSample(["Benzenesulfonic acid + DPH(1,6-Diphenyl-1,3,5-hexatriene) + N-methypyrrole + Pyrene"], df2)
-    predicted = Lasso_Test(spectralMatrix, spectra2, 1000000000, df1)
-    print("predictions given real mix: ", predicted)
+    # spectra2, _ = GetSample(["Benzenesulfonic acid + DPH(1,6-Diphenyl-1,3,5-hexatriene) + N-methypyrrole + Pyrene"], df2)
+    # predicted = ABESS_Test(spectralMatrix, spectra2, 5, df1)
+    # print("predictions given real mix: ", predicted)
 
 if __name__ == "__main__":
     main()

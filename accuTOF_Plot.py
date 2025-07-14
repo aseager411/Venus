@@ -5,6 +5,9 @@
 
 import numpy as np
 import pandas as pd
+import matplotlib
+matplotlib.use('Agg')  # Use a non-GUI backend for servers
+import matplotlib.pyplot as plt
 import matplotlib.pyplot as plt
 
 # import data from csv
@@ -82,7 +85,9 @@ def PlotSingleSpectra(spectra, bin_width=1.0, mz_min=50.0, title="Sample Spectru
     plt.xticks(xticks, fontsize=6)
 
     plt.tight_layout()
-    plt.show()
+    filename = f"{title.replace(' ', '_').replace(':','')}.png"
+    plt.savefig(filename, dpi=300)
+    plt.close()
 
 # plot overlayed spectra of multiple samples
 # Plot multiple spectra overlaid in different colors
@@ -98,7 +103,6 @@ def PlotMultipleSpectra(spectra_list, labels, bin_width=1.0, mz_min=50.0, title=
 
     for spec, label in zip(spectra_list, labels):
         spec = np.array(spec, dtype=float)
-        # normalize
         max_val = spec.max()
         if max_val > 0:
             spec = spec / max_val
@@ -109,7 +113,6 @@ def PlotMultipleSpectra(spectra_list, labels, bin_width=1.0, mz_min=50.0, title=
     plt.title(title)
     plt.legend(fontsize=8, loc='upper right')
 
-    # Determine tick spacing
     range_mz = mz_max - mz_min
     if range_mz <= 100:
         tick_spacing = 5
@@ -117,11 +120,15 @@ def PlotMultipleSpectra(spectra_list, labels, bin_width=1.0, mz_min=50.0, title=
         tick_spacing = 25
     else:
         tick_spacing = 50
+
     xticks = np.arange(mz_min, mz_max + 1, tick_spacing)
     plt.xticks(xticks, fontsize=6)
 
     plt.tight_layout()
-    plt.show()
+    filename = f"{title.replace(' ', '_').replace(':','')}.png"
+    plt.savefig(filename, dpi=300)
+    plt.close()
+
 
 
 ###################
@@ -129,11 +136,11 @@ def PlotMultipleSpectra(spectra_list, labels, bin_width=1.0, mz_min=50.0, title=
 ###################
 
 def main():
-    individual = "/Users/alexseager/Desktop/Summer Work 2025/Code/mass_spectra_individual.csv"
+    individual = "mass_spectra_individual.csv"
     spectralMatrix, df1 = LoadRealMatrix(individual)
     individual_names = df1.columns.tolist()
 
-    mixtures = "/Users/alexseager/Desktop/Summer Work 2025/Code/mass_spectra_mixtures.csv"
+    mixtures = "mass_spectra_mixtures.csv"
     samples, df2 = LoadRealMatrix(mixtures)
     mixture_names = df2.columns.tolist()
 
@@ -181,28 +188,28 @@ def main():
 
 
 
-    ### Truth vs model guess overlay 1-chloro-3-methoxybenzene + Benzenesulfonic acid + Dodecyltrimethylammonium bromide
-    #incorrect guesses:
-    spectra1, _ = GetSample([('Ala', 0.011404128270954328), ('Phenanthrene', 0.2217878523929781)], df1)
-    #not identified by model:
-    spectra2, _ = GetSample(["Benzenesulfonic acid"], df1)
+    # ### Truth vs model guess overlay 1-chloro-3-methoxybenzene + Benzenesulfonic acid + Dodecyltrimethylammonium bromide
+    # #incorrect guesses:
+    # spectra1, _ = GetSample([('Ala', 0.011404128270954328), ('Phenanthrene', 0.2217878523929781)], df1)
+    # #not identified by model:
+    # spectra2, _ = GetSample(["Benzenesulfonic acid"], df1)
 
-    #true sample
-    spectra3, _ = GetSample(["Benzenesulfonic acid + DPH(1,6-Diphenyl-1,3,5-hexatriene) + N-methypyrrole + Pyrene"], df2)
+    # #true sample
+    # spectra3, _ = GetSample(["Benzenesulfonic acid + DPH(1,6-Diphenyl-1,3,5-hexatriene) + N-methypyrrole + Pyrene"], df2)
    
-    #LASSO guess
-    spectra4, _ = GetSample([('N-methylpyrrole', 1.3282611345263897), ('Ala', 0.011404128270954328), ('Pyrene', 0.28486107747102996), ('Phenanthrene', 0.2217878523929781), ('16-diphenyl-135-hexatriene', 0.11069791839345598)], df1)
-    PlotMultipleSpectra(
-        [spectra3, spectra4],
-        labels=["sample (Benzenesulfonic acid + DPH(1,6-Diphenyl-1,3,5-hexatriene) + N-methypyrrole + Pyrene)", "guessed combo: N-methylpyrrole, Ala, Pyrene, Phenanthrene, 16-diphenyl-135-hexatriene"],
-        title="Overlay of true and closest match Spectra"
-    )
-    #what the model missed vs added
-    PlotMultipleSpectra(
-        [spectra1, spectra2],
-        labels=["false positives: Ala, Phenanthrene", "false negatives: Benzenesulfonic acid"],
-        title="Overlay of false positives and negatives"
-    )
+    # #LASSO guess
+    # spectra4, _ = GetSample([('N-methylpyrrole', 1.3282611345263897), ('Ala', 0.011404128270954328), ('Pyrene', 0.28486107747102996), ('Phenanthrene', 0.2217878523929781), ('16-diphenyl-135-hexatriene', 0.11069791839345598)], df1)
+    # PlotMultipleSpectra(
+    #     [spectra3, spectra4],
+    #     labels=["sample (Benzenesulfonic acid + DPH(1,6-Diphenyl-1,3,5-hexatriene) + N-methypyrrole + Pyrene)", "guessed combo: N-methylpyrrole, Ala, Pyrene, Phenanthrene, 16-diphenyl-135-hexatriene"],
+    #     title="Overlay of true and closest match Spectra"
+    # )
+    # #what the model missed vs added
+    # PlotMultipleSpectra(
+    #     [spectra1, spectra2],
+    #     labels=["false positives: Ala, Phenanthrene", "false negatives: Benzenesulfonic acid"],
+    #     title="Overlay of false positives and negatives"
+    # )
     
     # spectra, names = GetSample(["Pro", "Ser", "Thr"], df1)
     # PlotSingleSpectra(spectra, title=f"Artificial Sample: {' + '.join(names)}")
@@ -210,7 +217,7 @@ def main():
     # spectra, names = GetSample(['N-methylpyrrole', '246-Trimethylpyridine', 'Nile red', 'Methylcyclopentane'], df1)
     # PlotSingleSpectra(spectra, title=f"Artificial Sample: {' + '.join(names)}")
 
-    spectra, names = GetSample(["Cyclopentane"], df1)
+    spectra, names = GetSample(["Dodecanoic acid"], df1)
     PlotSingleSpectra(spectra, title=f"Artificial Sample: {' + '.join(names)}")
     
     # spectra, names = GetSample(["Phenanthrene"], df1)
