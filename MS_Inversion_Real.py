@@ -192,10 +192,10 @@ def Split_Model_Test(spectralMatrix, known, a):
 ###################
 
 def main():
-    file = "/Users/alexseager/Desktop/Summer Work 2025/Code/mass_spectra_individual.csv"
+    file = "mass_spectra_individual.csv"
     A, df = LoadRealMatrix(file)
 
-    Model_Test(A, 50)
+    Model_Test(A, 0.00001)
     # spectra, trueMolecules = GetSampleSpectrum(2, A)
     # print("true molecules: ", trueMolecules)
     # predictedMolecules = ABESS(A, spectra, 10)

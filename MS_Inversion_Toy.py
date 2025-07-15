@@ -353,7 +353,8 @@ def Model_Test(spectralMatrix, a):
                 #print("New noisy spectrum:", noisySpectra)
 
                 # Run fit
-                x_sol = ABESS(spectralMatrix, noisySpectra, a)
+                #x_sol = ABESS(spectralMatrix, s, a)
+                x_sol = Lasso_L1(spectralMatrix, s, a)
 
                 ## Evaluate model efficiency
                 # Disregard predictions below this concentration
@@ -389,7 +390,7 @@ def Model_Test(spectralMatrix, a):
 
     ax.set_xlabel('Sample Complexity (number of molecules mixed)')
     ax.set_ylabel('Weighted F-Score')
-    ax.set_title('ABESS Recovery Score vs. Sample Complexity')
+    ax.set_title('Lasso Recovery Score vs. Sample Complexity')
     max_j = max(xs)  # detect largest complexity used
     ax.set_xticks(range(1, max_j + 1))
     ax.set_xlim(0.5, max_j + 0.5)
@@ -398,7 +399,7 @@ def Model_Test(spectralMatrix, a):
     ax.grid(True, linestyle='--', alpha=0.4)
 
     plt.tight_layout()
-    plt.show()
+    plt.savefig("Basic_ABESS_Test.png")
 
 
 def main():

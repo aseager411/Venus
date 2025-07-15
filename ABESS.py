@@ -48,7 +48,7 @@ def compute_sic(y, y_pred, s, p, alpha=2):
     sic = n * np.log(rss / n) + alpha * s * np.log(p) * np.log(np.log(n))
     return sic
 
-def ABESS(matrix, spectra, sMax, df=None):
+def ABESS(matrix, spectra, sMax, df=None, k=5):
     best_sic = float('inf')
     best_molecules = None
     best_coefficients = None
@@ -57,7 +57,7 @@ def ABESS(matrix, spectra, sMax, df=None):
     p = matrix.shape[1]  # number of molecules
 
     for s in range(1, sMax + 1):
-        selected_indices, coefficients = Splice(matrix, spectra, s, k=1)
+        selected_indices, coefficients = Splice(matrix, spectra, s, k)
         y_pred = matrix[:, selected_indices] @ coefficients
         sic = compute_sic(spectra, y_pred, s, p)
 
