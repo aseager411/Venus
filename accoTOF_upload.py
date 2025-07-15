@@ -9,7 +9,8 @@ import pandas as pd
 from pathlib import Path
 
 # Adjust this to your folder
-base_dir = Path("/Users/alexseager/Desktop/Summer Work 2025/MS_Data")
+base_dir = Path("/Users/alexseager/Desktop/Summer_Work_2025/MS_Data")
+
 
 # Bin width (assumed fixed at 1.0)
 bin_width = 1.0
@@ -47,7 +48,11 @@ for file in base_dir.rglob("*.txt"):
         })
 
     elif top_group == "Mixtures":
-        group_name = "Ungrouped"
+        if len(relative_parts) >= 2:
+            group_name = relative_parts[1]  # e.g., 'B5M1' or 'Ungrouped'
+        else:
+            group_name = "Ungrouped"
+            
         spectra_mixtures[mol_name] = df
         metadata_mixtures.append({
             "molecule": mol_name,
@@ -104,5 +109,6 @@ if not matrix_individual.empty:
     half_window = 10
     print("Preview of Individual Matrix:")
     print(matrix_individual.loc[midpoint - half_window: midpoint + half_window, first_cols])
+    print(f"✅ Loaded {len(spectra_individual)} individual molecule spectra")
 else:
     print("⚠️ No Individual matrix data found.")
