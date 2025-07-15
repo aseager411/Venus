@@ -51,7 +51,7 @@ def plot_dendrogram(data, labels, truncate_level=None):
     plt.xlabel("Molecule")
     plt.ylabel("Distance")
     plt.tight_layout()
-    plt.show()
+    plt.savefig("Cluster.png", dpi=300)
 
 
 #DBSCAN
@@ -113,7 +113,7 @@ def run_and_plot_dbscan(A, df, eps=1.5, min_samples=4):
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
-    plt.show()
+    plt.savefig("Cluster.png", dpi=300)
 
     # Save cluster assignments
     cluster_df = pd.DataFrame({'Molecule': mol_names, 'Cluster': labels})
@@ -151,7 +151,7 @@ def run_and_plot_hdbscan(A, df, min_cluster_size=5, min_samples=None):
     plt.legend()
     plt.tight_layout()
     plt.grid(True)
-    plt.show()
+    plt.savefig("Cluster.png", dpi=300)
 
     # Return cluster assignments
     return pd.DataFrame({'Molecule': mol_names, 'Cluster': labels})
@@ -160,7 +160,7 @@ def run_and_plot_hdbscan(A, df, min_cluster_size=5, min_samples=None):
 
 # Main
 def main():
-    file = "/Users/alexseager/Desktop/Summer Work 2025/Code/Full_GNPS_matrix.csv"
+    file = "mass_spectra_individual.csv"
     A, df = LoadRealMatrix(file)
     
     cluster_df = run_and_plot_dbscan(A, df, eps=4, min_samples=3)
@@ -170,7 +170,7 @@ def main():
     # A_T = A.T
     # molecule_names = df.columns.tolist()
 
-    # # Plot full or truncated dendrogram
+    # # # Plot full or truncated dendrogram
     # plot_dendrogram(A_T, labels=molecule_names, truncate_level=20)  # change truncate_level=None for full tree
 
 if __name__ == "__main__":

@@ -143,16 +143,39 @@ def main():
     # predicted = L_Zero_test(spectralMatrix, spectra2, df1)
     # print("predictions given real mix: ", predicted)
 
-    print("")
-    print("True molecules: PTSA-Na4+1234tetfbenz+decyltriambr+purine+dodecTBD+12diampur+benzsulfa+nandecsulf+1m3mbenz+xanth")
+    
+    # print("True molecules: PTSA-Na4+1234tetfbenz+decyltriambr+purine+dodecTBD+12diampur+benzsulfa+nandecsulf+1m3mbenz+xanth")
+
+    # # spectra1, _ = GetSample(["Benzenesulfonic acid", "16-diphenyl-135-hexatriene", "N-methylpyrrole", "Pyrene"], df1)
+    # # predicted = L_Zero_test(spectralMatrix, spectra1, df1)
+    # # print("predictions given fake mix: ", predicted)
+    # print("Lasso: ")
+    # spectra2, _ = GetSample(["1-PTSA-Na4+1234tetfbenz+decyltriambr+purine+dodecTBD+12diampur+benzsulfa+nandecsulf+1m3mbenz+xanth"], df2)
+    # predicted = Lasso_Test(spectralMatrix, spectra2, 100, df1)
+    # print("predictions given real mix: ", predicted)
+    
+    # print("ABESS: ")
+    # spectra2, _ = GetSample(["1-PTSA-Na4+1234tetfbenz+decyltriambr+purine+dodecTBD+12diampur+benzsulfa+nandecsulf+1m3mbenz+xanth"], df2)
+    # predicted = ABESS_Test(spectralMatrix, spectra2, 12, df1)
+    # print("predictions given real mix: ", predicted)
+    # # print(individual_names)
+
+
+    print("True molecules: 1-PTSA-Na4+1234tetfbenzTBD+decyltriambr+purine")
 
     # spectra1, _ = GetSample(["Benzenesulfonic acid", "16-diphenyl-135-hexatriene", "N-methylpyrrole", "Pyrene"], df1)
     # predicted = L_Zero_test(spectralMatrix, spectra1, df1)
     # print("predictions given fake mix: ", predicted)
-
-    spectra2, _ = GetSample(["3-PTSA-Na4+1234tetfbenz+decyltriambr+purine+dodecTBD+12diampur+benzsulfa+nandecsulf+1m3mbenz+xanth"], df2)
-    predicted = ABESS_Test(spectralMatrix, spectra2, 15, df1)
+    print("Lasso: ")
+    spectra2, _ = GetSample(["3-PTSA-Na4+1234tetfbenzTBD+decyltriambr+purine"], df2)
+    predicted = Lasso_Test(spectralMatrix, spectra2, 100, df1)
     print("predictions given real mix: ", predicted)
+    
+    print("ABESS: ")
+    spectra2, _ = GetSample(["3-PTSA-Na4+1234tetfbenzTBD+decyltriambr+purine"], df2)
+    predicted = ABESS_Test(spectralMatrix, spectra2, 5, df1)
+    print("predictions given real mix: ", predicted)
+    # print(individual_names)
 
     #Test on Pro, Ser, Thr mix with L0
     # print("Test with L0")
