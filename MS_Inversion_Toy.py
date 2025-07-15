@@ -15,6 +15,7 @@ from sklearn.metrics import r2_score
 from abess.linear import LinearRegression
 from scipy.optimize import lsq_linear
 
+
 # importing generated data from the data generation file
 from MS_Model_Current import (
     spectralMatrix,
@@ -321,85 +322,99 @@ def NSampleTest(spectralMatrix, snr):
     plt.tight_layout()
     plt.show()
 
+# testing inverse models
+def Model_Test(spectralMatrix, a, noise=True):
+    import matplotlib.pyplot as plt
+    import numpy as np
+    from joblib import Parallel, delayed
 
-# Testing L1 for SNR and sample complexity
-def Model_Test(spectralMatrix, a):
-    # spectralMatrix is the same every run
-    #print("Fixed spectralMatrix:\n", spectralMatrix)
-    snr_colors = {3: 'C0', 5: 'C1', 8: 'C2'}
-    marker_map  = {3: 'o', 5: 's', 8: '^'}
-    offsets     = {3:-0.2, 5:0.0, 8:+0.2}
+    snr_values = [3, 5, 8] if noise else [None]
+    snr_colors = {3: 'C0', 5: 'C1', 8: 'C2', None: 'C0'}
+    marker_map  = {3: 'o', 5: 's', 8: '^', None: 'o'}
+    offsets     = {3:-0.2, 5:0.0, 8:+0.2, None: 0.0}
     jitter_amp  = 0.05
 
-    # draw a fresh noiseless sample (new random mixture)
-    fig, ax = plt.subplots(figsize=(6,4))
+    fig, ax = plt.subplots(figsize=(6, 4))
 
-    # loop over the three SNRs
-    for snr in (3, 5, 8):
-        xs = []  # sample complexities
-        ys = []  # scores
-        # loop over sample complexities
-        for j in range(1, 51):
-            sampleComplexity = j
-            for k in range (1):
-                s, trueMolecules = GetSampleSpectrum(
-                    sampleComplexity,
-                    spectralMatrix,
-                )
-                #print("New sample spectrum:", s)
+    # Define tasks
+    tasks = [
+        (snr, j, k)
+        for snr in snr_values
+        for j in range(1, 51)
+        for k in range(1)  # increase for repeats
+    ]
 
-                # add noise
-                noisySpectra = AddNoise(snr, s)
-                #print("New noisy spectrum:", noisySpectra)
+    # Helper function
+    def run_single_test(spectralMatrix, a, snr, j, k, offsets, jitter_amp, noise):
+        sampleComplexity = j
+        s, trueMolecules = GetSampleSpectrum(sampleComplexity, spectralMatrix)
 
-                # Run fit
-                #x_sol = ABESS(spectralMatrix, s, a)
-                x_sol = Lasso_L1(spectralMatrix, s, a)
+        noisySpectra = AddNoise(snr, s) if noise else s
+        #Change model here
+        x_sol = ABESS(spectralMatrix, noisySpectra, a, exhaustive_k=True)
 
-                ## Evaluate model efficiency
-                # Disregard predictions below this concentration
-                # Disregard predictions below this concentration threshold
-                gamma = 0.0001
+        gamma = 0.0001
+        if isinstance(x_sol[0], tuple):
+            predictedMolecules = [name for (name, coef) in x_sol if abs(coef) > gamma]
+        else:
+            predictedMolecules = [i for i, v in enumerate(x_sol) if abs(v) > gamma]
 
-                # Handle tuple output from ABESS (name, coefficient)
-                if isinstance(x_sol[0], tuple):
-                    predictedMolecules = [name for (name, coef) in x_sol if abs(coef) > gamma]
-                else:
-                    predictedMolecules = [i for i, v in enumerate(x_sol) if abs(v) > gamma]
-                print("molecules chosen by model: ", predictedMolecules)
-                print("true molecules: ", trueMolecules)
-                # score the models choices favoring precision over recall
-                score = f_beta(trueMolecules, predictedMolecules)
-                print("score: ", score) 
-                
-                # collect for plotting
-                xs.append(j)
-                ys.append(score)
+        print(f"SNR={snr} | SampleComplexity={j} | True={sorted(trueMolecules)} | Predicted={sorted(predictedMolecules)}")
+        score = f_beta(trueMolecules, predictedMolecules)
+        x_val = j + offsets[snr] + np.random.uniform(-jitter_amp, jitter_amp)
+        return snr, x_val, score
 
-        # scatter for this SNR
-        # apply fixed offset + random jitter for each point
-        x_plot = [x + offsets[snr] + np.random.uniform(-jitter_amp, jitter_amp)
-                  for x in xs]
+    # Run in parallel
+    results = Parallel(n_jobs=-1, backend='loky')(
+        delayed(run_single_test)(spectralMatrix, a, snr, j, k, offsets, jitter_amp, noise)
+        for (snr, j, k) in tasks
+    )
 
-        ax.scatter(x_plot, ys,
+    # Plotting
+    for snr in snr_values:
+        xs = [x for s, x, y in results if s == snr]
+        ys = [y for s, x, y in results if s == snr]
+
+        ax.scatter(xs, ys,
                    color=snr_colors[snr],
                    marker=marker_map[snr],
-                   label=f'SNR = {snr}',
+                   label=f'SNR = {snr}' if noise else None,
                    s=60, alpha=0.8,
                    edgecolors='k', linewidths=0.5)
 
     ax.set_xlabel('Sample Complexity (number of molecules mixed)')
     ax.set_ylabel('Weighted F-Score')
-    ax.set_title('Lasso Recovery Score vs. Sample Complexity')
-    max_j = max(xs)  # detect largest complexity used
-    ax.set_xticks(range(1, max_j + 1))
+    ax.set_title('ABESS Recovery Score vs. Sample Complexity')
+
+    all_j_values = [j for (_, j, _) in tasks]
+    max_j = max(all_j_values)
+
+    # Dynamic tick spacing
+    if max_j <= 20:
+        xtick_step = 1
+        fontsize = 8
+    elif max_j <= 40:
+        xtick_step = 2
+        fontsize = 6
+    elif max_j <= 80:
+        xtick_step = 5
+        fontsize = 5
+    else:
+        xtick_step = 10
+        fontsize = 4
+
+    ax.set_xticks(range(0, max_j + xtick_step, xtick_step))
+    ax.tick_params(axis='x', labelsize=fontsize)
     ax.set_xlim(0.5, max_j + 0.5)
     ax.set_ylim(-0.05, 1.05)
-    ax.legend(title='Noise level')
+    if noise:
+        ax.legend(title='Noise level')
     ax.grid(True, linestyle='--', alpha=0.4)
 
     plt.tight_layout()
-    plt.savefig("Basic_ABESS_Test.png")
+    plt.savefig("Test.png", dpi=300)
+
+
 
 
 def main():

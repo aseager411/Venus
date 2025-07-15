@@ -185,17 +185,15 @@ def Split_Model_Test(spectralMatrix, known, a):
     plt.tight_layout()
     plt.show()
 
-
-
 ###################
 #  MAIN FUNCTION  #
 ###################
 
 def main():
-    file = "mass_spectra_individual.csv"
+    file = "Full_GNPS_matrix.csv"
     A, df = LoadRealMatrix(file)
 
-    Model_Test(A, 0.00001)
+    Model_Test(A, 50, False)
     # spectra, trueMolecules = GetSampleSpectrum(2, A)
     # print("true molecules: ", trueMolecules)
     # predictedMolecules = ABESS(A, spectra, 10)
