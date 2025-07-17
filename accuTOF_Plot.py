@@ -9,6 +9,11 @@ import matplotlib
 matplotlib.use('Agg')  # Use a non-GUI backend for servers
 import matplotlib.pyplot as plt
 import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+from matplotlib import colormaps
+import umap
+
 
 # import data from csv
 def LoadRealMatrix(csv_path, numMolecules=None, numWavelengths=None, normalize=True):
@@ -129,8 +134,88 @@ def PlotMultipleSpectra(spectra_list, labels, bin_width=1.0, mz_min=50.0, title=
     plt.savefig(filename, dpi=300)
     plt.close()
 
+#visualize similarity of molecular groups
+def plot_pca_by_group(A, group_labels, molecule_labels=None, n_components=2):
+    """
+    A: numpy array of shape (features, samples)
+    group_labels: list of class labels for each sample (same order as columns of A)
+    molecule_labels: optional, list of molecule names
+    n_components: 2 or 3 for PCA
+    """
+
+    # Transpose to shape (samples, features)
+    A_T = A.T
+
+    # Standardize features (not molecule-level scaling)
+    A_scaled = StandardScaler().fit_transform(A_T)
+
+    # PCA
+    pca = PCA(n_components=n_components)
+    A_pca = pca.fit_transform(A_scaled)
+
+    unique_groups = sorted(set(group_labels))
+    colors = plt.cm.get_cmap("tab10", len(unique_groups))
+
+    plt.figure(figsize=(10, 7))
+    for i, group in enumerate(unique_groups):
+        idx = [j for j, g in enumerate(group_labels) if g == group]
+        plt.scatter(A_pca[idx, 0], A_pca[idx, 1], label=group, alpha=0.7, s=80, edgecolors='k', c=[colors(i)])
+
+    if molecule_labels:
+        for i, name in enumerate(molecule_labels):
+            plt.text(A_pca[i, 0], A_pca[i, 1], name, fontsize=6, alpha=0.6)
+
+    colors = colormaps.get_cmap("tab10")
+    plt.figure(figsize=(10, 7))
+    for i, group in enumerate(unique_groups):
+        idx = [j for j, g in enumerate(group_labels) if g == group]
+        color = colors(i / max(1, len(unique_groups) - 1))
+        plt.scatter(A_pca[idx, 0], A_pca[idx, 1], label=group, alpha=0.7, s=80, edgecolors='k', c=[color])
 
 
+    plt.xlabel("PCA 1")
+    plt.ylabel("PCA 2")
+    plt.title("PCA of Molecule Spectra Colored by Group")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig("PCA.png", dpi=300)
+
+
+#more visualization
+def plot_umap_by_group(A, group_labels, molecule_labels=None, n_neighbors=5, min_dist=0.1):
+    """
+    A: numpy array of shape (features, samples)
+    group_labels: list of class labels for each sample (same order as columns of A)
+    molecule_labels: optional, list of molecule names
+    """
+    A_T = A.T
+    A_scaled = StandardScaler().fit_transform(A_T)
+
+    reducer = umap.UMAP(n_neighbors=n_neighbors, min_dist=min_dist, random_state=42)
+    A_umap = reducer.fit_transform(A_scaled)
+
+    unique_groups = sorted(set(group_labels))
+    colors = plt.colormaps.get_cmap("tab10")
+
+    plt.figure(figsize=(10, 7))
+    for i, group in enumerate(unique_groups):
+        idx = [j for j, g in enumerate(group_labels) if g == group]
+        color = colors(i / max(1, len(unique_groups) - 1))
+        plt.scatter(A_umap[idx, 0], A_umap[idx, 1], label=group, alpha=0.7, s=80, edgecolors='k', c=[color])
+
+    if molecule_labels:
+        for i, name in enumerate(molecule_labels):
+            plt.text(A_umap[i, 0], A_umap[i, 1], name, fontsize=6, alpha=0.6)
+
+    plt.xlabel("UMAP 1")
+    plt.ylabel("UMAP 2")
+    plt.title("UMAP of Molecule Spectra Colored by Group")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig("UMAP.png", dpi=300)
+    plt.close()
 ###################
 #  MAIN FUNCTION  #
 ###################
@@ -143,6 +228,18 @@ def main():
     mixtures = "mass_spectra_mixtures.csv"
     samples, df2 = LoadRealMatrix(mixtures)
     mixture_names = df2.columns.tolist()
+
+    # meta = pd.read_csv("mass_spectra_metadata_individual.csv")  # Assumes this file has 'molecule' and 'group' columns
+
+    # # Ensure matching order between df1.columns and metadata
+    # col_to_group = dict(zip(meta["molecule"], meta["group"]))
+    # group_labels = [col_to_group.get(name, "Unknown") for name in individual_names]
+
+    # # PCA plot
+    # #plot_pca_by_group(spectralMatrix, group_labels, individual_names)   
+    # plot_umap_by_group(spectralMatrix, group_labels, individual_names)
+
+
 
 
     ### truth vs model guess overlay pro ser thr
@@ -211,20 +308,35 @@ def main():
     #     title="Overlay of false positives and negatives"
     # )
     
-    # spectra, names = GetSample(["Pro", "Ser", "Thr"], df1)
-    # PlotSingleSpectra(spectra, title=f"Artificial Sample: {' + '.join(names)}")
+    # spectra, names = GetSample(["dodeca", "mcyclopen", "Gly", "Ala", "P2", "Benzene", "d-gluc", ], df1)
+    # PlotSingleSpectra(spectra, title=f"Environmental Sample")
 
     # spectra, names = GetSample(['N-methylpyrrole', '246-Trimethylpyridine', 'Nile red', 'Methylcyclopentane'], df1)
     # PlotSingleSpectra(spectra, title=f"Artificial Sample: {' + '.join(names)}")
 
-    spectra, names = GetSample(["Dodecanoic acid"], df1)
-    PlotSingleSpectra(spectra, title=f"Artificial Sample: {' + '.join(names)}")
+    spectra, names = GetSample(["Benzene"], df1)
+    PlotSingleSpectra(spectra, title=f"Sample: {' + '.join(names)}")
     
-    # spectra, names = GetSample(["Phenanthrene"], df1)
-    # PlotSingleSpectra(spectra, title=f"Artificial Sample: {' + '.join(names)}")
+    # spectra1, _ = GetSample(["Dodeca"], df1)
+    # spectra2, _ = GetSample(["undeca"], df1)
+    # spectra3, _ = GetSample(["tridodeca"], df1)
+    
+    # # spectra1, _ = GetSample([('Ala', 0.011404128270954328), ('Phenanthrene', 0.2217878523929781)], df1)
+    # # #not identified by model:
+    # # spectra2, _ = GetSample(["Benzenesulfonic acid"], df1)
 
-    # spectra, names = GetSample(["1-chloro-3-methoxybenzene + Benzenesulfonic acid + Dodecyltrimethylammonium bromide"], df2)
-    # PlotSingleSpectra(spectra, title=f"Artificial Sample: {' + '.join(names)}")
+    # # #true sample
+    # spectra3, _ = GetSample(["Benzenesulfonic acid + DPH(1,6-Diphenyl-1,3,5-hexatriene) + N-methypyrrole + Pyrene"], df2)
+   
+    # # #LASSO guess
+    # # spectra4, _ = GetSample([('N-methylpyrrole', 1.3282611345263897), ('Ala', 0.011404128270954328), ('Pyrene', 0.28486107747102996), ('Phenanthrene', 0.2217878523929781), ('16-diphenyl-135-hexatriene', 0.11069791839345598)], df1)
+    # PlotMultipleSpectra(
+    #     [spectra1, spectra2, spectra 3],
+    #     labels=["sample (Benzenesulfonic acid + DPH(1,6-Diphenyl-1,3,5-hexatriene) + N-methypyrrole + Pyrene)", "guessed combo: N-methylpyrrole, Ala, Pyrene, Phenanthrene, 16-diphenyl-135-hexatriene"],
+    #     title="Overlay of true and closest match Spectra"
+    # )
+    # # spectra, names = GetSample(["1-chloro-3-methoxybenzene + Benzenesulfonic acid + Dodecyltrimethylammonium bromide"], df2)
+    # # PlotSingleSpectra(spectra, title=f"Artificial Sample: {' + '.join(names)}")
 
     # spectra, names = GetSample(["Benzene + Dodecyltrimethylammonium bromide"], df2)
     # PlotSingleSpectra(spectra, title=f"Artificial Sample: {' + '.join(names)}")

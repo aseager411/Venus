@@ -44,7 +44,7 @@ def plot_dendrogram(data, labels, truncate_level=None):
         linkage_matrix,
         labels=labels,
         leaf_rotation=90,
-        leaf_font_size=5,
+        leaf_font_size=10,
         truncate_mode='level' if truncate_level else None,
         p=truncate_level if truncate_level else None,
         color_threshold=None  # You can set this to color branches by height
@@ -165,15 +165,15 @@ def main():
     file = "mass_spectra_individual.csv"
     A, df = LoadRealMatrix(file)
     
-    cluster_df = run_and_plot_hdbscan(A, df, min_cluster_size=2)
+    # cluster_df = run_and_plot_hdbscan(A, df, min_cluster_size=2)
   
   
-    # # Transpose for clustering: shape (molecules, features)
-    # A_T = A.T
-    # molecule_names = df.columns.tolist()
+    # Transpose for clustering: shape (molecules, features)
+    A_T = A.T
+    molecule_names = df.columns.tolist()
 
     # # # Plot full or truncated dendrogram
-    # plot_dendrogram(A_T, labels=molecule_names, truncate_level=20)  # change truncate_level=None for full tree
+    plot_dendrogram(A_T, labels=molecule_names, truncate_level=20)  # change truncate_level=None for full tree
 
 if __name__ == "__main__":
     main()
