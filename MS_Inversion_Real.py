@@ -41,7 +41,8 @@ from MS_Inversion_Toy import (
     Model_Test,
     L_Zero,
     OneSampleTest,
-    NSampleTest
+    NSampleTest,
+    strict_recall_score
 )
 
 from ABESS import (
@@ -193,7 +194,7 @@ def main():
     file = "Full_GNPS_matrix.csv"
     A, df = LoadRealMatrix(file)
 
-    Model_Test(A, 50, False)
+    Model_Test(A, 50, False, score_fn=strict_recall_score, sampleRange = 50)
     # spectra, trueMolecules = GetSampleSpectrum(2, A)
     # print("true molecules: ", trueMolecules)
     # predictedMolecules = ABESS(A, spectra, 10)

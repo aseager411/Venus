@@ -34,7 +34,6 @@ def LoadRealMatrix(csv_path, numMolecules=None, numWavelengths=None, normalize=F
     return A, df
 
 
-
 def compute_sic(y, y_pred, s, p, alpha=2):
     n = len(y)
     rss = np.sum((y - y_pred)**2)
@@ -63,6 +62,10 @@ def ABESS(matrix, spectra, sMax, df=None, k=1, exhaustive_k=False):
         k_values = range(1, s + 1) if exhaustive_k else [k]
 
         for current_k in k_values:
+            #debug
+            if not np.all(np.isfinite(spectra)):
+                print(f"⚠️ Non-finite values in input spectra. Skipping s={s}, k={current_k}")
+                continue
             selected_indices, coefficients = Splice(matrix, spectra, s, current_k)
             y_pred = matrix[:, selected_indices] @ coefficients
             sic = compute_sic(spectra, y_pred, s, p)
@@ -126,6 +129,7 @@ def Splice(matrix, spectra, s, k, max_iter=100, tol=1e-6):
             continue
 
         residual = spectra - X_A @ beta_A
+
         loss_prev = 0.5 * np.mean(residual**2)
 
         # Backward sacrifices

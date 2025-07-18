@@ -53,6 +53,9 @@ import numpy as np
 def evaluate_combo(cols, matrix, spectra, criterion, n_obs, n_vars):
     subM = matrix[:, cols]
 
+    if np.any(~np.isfinite(subM)) or np.any(~np.isfinite(spectra)):
+        print("Warning: NaN or Inf detected in inputs!")
+
     # Non-negative least squares fit
     result = lsq_linear(subM, spectra, bounds=(0, np.inf), method='trf')
     x_hat = result.x
@@ -192,6 +195,31 @@ def f_beta(trueSet, predSet, beta=0.5):
     den = β2 * precision + recall
     return num / den if den > 0 else 0.0
 
+#scoring metric based on strict precision
+def strict_recall_score(trueSet, predSet, precision_threshold=0.95):
+    def extract_name(x):
+        if isinstance(x, (str, int, np.integer)):
+            return x
+        elif isinstance(x, (tuple, list)):
+            return x[0]
+        else:
+            return int(x)
+
+    true_set = set(extract_name(t) for t in trueSet)
+    pred_set = set(extract_name(p) for p in predSet)
+
+    tp = len(pred_set & true_set)
+    fp = len(pred_set - true_set)
+    fn = len(true_set - pred_set)
+
+    precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+    recall    = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+
+    if precision < precision_threshold:
+        return -recall  # penalize if below precision threshold
+    else:
+        return recall   # valid only if precision ≥ threshold
+
 
 
 
@@ -247,7 +275,7 @@ def NSampleTest(spectralMatrix, snr):
     plt.show()
 
 # testing inverse models
-def Model_Test(spectralMatrix, a, noise=True):
+def Model_Test(spectralMatrix, a, noise=True, score_fn=f_beta, sampleRange = 20):
     import matplotlib.pyplot as plt
     import numpy as np
     from joblib import Parallel, delayed
@@ -264,7 +292,7 @@ def Model_Test(spectralMatrix, a, noise=True):
     tasks = [
         (snr, j, k)
         for snr in snr_values
-        for j in range(1, 51)
+        for j in range(1, sampleRange + 1)
         for k in range(1)  # increase for repeats
     ]
 
@@ -284,7 +312,7 @@ def Model_Test(spectralMatrix, a, noise=True):
             predictedMolecules = [i for i, v in enumerate(x_sol) if abs(v) > gamma]
 
         print(f"SNR={snr} | SampleComplexity={j} | True={sorted(trueMolecules)} | Predicted={sorted(predictedMolecules)}")
-        score = f_beta(trueMolecules, predictedMolecules)
+        score = score_fn(trueMolecules, predictedMolecules)
         x_val = j + offsets[snr] + np.random.uniform(-jitter_amp, jitter_amp)
         return snr, x_val, score
 
@@ -307,7 +335,7 @@ def Model_Test(spectralMatrix, a, noise=True):
                    edgecolors='k', linewidths=0.5)
 
     ax.set_xlabel('Sample Complexity (number of molecules mixed)')
-    ax.set_ylabel('Weighted F-Score')
+    ax.set_ylabel('Recall')
     ax.set_title('ABESS Recovery Score vs. Sample Complexity')
 
     all_j_values = [j for (_, j, _) in tasks]
@@ -330,13 +358,25 @@ def Model_Test(spectralMatrix, a, noise=True):
     ax.set_xticks(range(0, max_j + xtick_step, xtick_step))
     ax.tick_params(axis='x', labelsize=fontsize)
     ax.set_xlim(0.5, max_j + 0.5)
-    ax.set_ylim(-0.05, 1.05)
+
+    # Determine dynamic Y-axis limits based on score range
+    all_scores = [y for (_, _, y) in results]
+    y_min = min(min(all_scores), -0.05)
+    y_max = max(max(all_scores), 1.05)
+    ax.set_ylim(y_min - 0.05, y_max + 0.05)
+
+    # Add horizontal line at 0 if negatives exist
+    if y_min < 0:
+        ax.axhline(0, color='gray', linewidth=1, linestyle='--')
+
     if noise:
         ax.legend(title='Noise level')
+
     ax.grid(True, linestyle='--', alpha=0.4)
 
     plt.tight_layout()
     plt.savefig("Test.png", dpi=300)
+
 
 
 
