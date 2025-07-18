@@ -12,7 +12,6 @@ Ala,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Am
 Glu,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Glu_250C_070325.txt,Glu
 Leu,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Leu_250C_070325.txt,Leu
 Phe,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Phe_250C_070325.txt,Phe
-Cys,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Cys_250C_070325.txt,Cys
 Ser,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Ser_250C_070325.txt,Ser
 Ile,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Ile_250C_070325.txt,Ile
 Gln,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Gln_250C_070325.txt,Gln
@@ -72,3 +71,8 @@ d-gluc,Polydienes,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/
 2deoxyrib,Polydienes,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Polydienes/2deoxyrib_250C_071125.txt,2deoxyrib
 d-rib,Polydienes,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Polydienes/d-rib_250C_071125.txt,d-rib
 16diph135hex,Polydienes,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Polydienes/16diph135hex_250C_070725.txt,16diph135hex
+Sulfur,Inorganic,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Inorganic/Sulfur/Sulfur_250C_071725_Try5.txt,Sulfur
+Sulfur,Inorganic,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Inorganic/Sulfur/Sulfur_250C_071725_Try4.txt,Sulfur
+Sulfur,Inorganic,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Inorganic/Sulfur/Sulfur_250C_071725_Try1.txt,Sulfur
+Sulfur,Inorganic,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Inorganic/Sulfur/Sulfur_250C_071725_Try3.txt,Sulfur
+Sulfur,Inorganic,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Inorganic/Sulfur/Sulfur_250C_071725_Try2.txt,Sulfur

@@ -41,14 +41,29 @@ def LoadRealMatrix(csv_path, numMolecules=None, numWavelengths=None, normalize=F
     return A, df
 
 # construct a "sample" from the individual molecule spectra
+# if given a molecule with multiple entries 
 # used to examine mixing
 def GetSample(molecule_names, spectral_df):
     spectra = np.zeros(spectral_df.shape[0])
+    used_names = []
+
     for name in molecule_names:
-        if name not in spectral_df.columns:
-            raise ValueError(f"Molecule '{name}' not found in spectral data.")
-        spectra += spectral_df[name].values
-    return spectra, molecule_names
+        # First try exact match
+        if name in spectral_df.columns:
+            spectra += spectral_df[name].values
+            used_names.append(name)
+        else:
+            # Find all columns that start with the given name
+            matching_cols = [col for col in spectral_df.columns if col.startswith(name)]
+            if not matching_cols:
+                raise ValueError(f"Molecule '{name}' not found in spectral data.")
+            # Average them
+            avg_spectrum = spectral_df[matching_cols].mean(axis=1)
+            spectra += avg_spectrum.values
+            used_names.append(f"{name} (avg {len(matching_cols)} reps)")
+
+    return spectra, used_names
+
 
 ##########
 #METHODS
@@ -161,21 +176,32 @@ def main():
     # # print(individual_names)
 
 
-    print("True molecules: 1-PTSA-Na4+1234tetfbenzTBD+decyltriambr+purine")
+    print("True molecules: 1: serine, 2: histidine, 3: sodium n-decyl sulfate (sodium salt), 4: d-(-)-ribose")
 
-    # spectra1, _ = GetSample(["Benzenesulfonic acid", "16-diphenyl-135-hexatriene", "N-methylpyrrole", "Pyrene"], df1)
-    # predicted = L_Zero_test(spectralMatrix, spectra1, df1)
-    # print("predictions given fake mix: ", predicted)
     print("Lasso: ")
-    spectra2, _ = GetSample(["3-PTSA-Na4+1234tetfbenzTBD+decyltriambr+purine"], df2)
-    predicted = Lasso_Test(spectralMatrix, spectra2, 100, df1)
+    spectra2, _ = GetSample(["B6M2"], df2)
+    predicted = Lasso_Test(spectralMatrix, spectra2, 1000000, df1)
     print("predictions given real mix: ", predicted)
     
     print("ABESS: ")
-    spectra2, _ = GetSample(["3-PTSA-Na4+1234tetfbenzTBD+decyltriambr+purine"], df2)
+    spectra2, _ = GetSample(["B6M2"], df2)
     predicted = ABESS_Test(spectralMatrix, spectra2, 5, df1)
     print("predictions given real mix: ", predicted)
-    # print(individual_names)
+
+
+    # print("True molecules: 1: cysteine 2: valine 3: adenine 4: undecanoic acid")
+    # print("")
+    # print("Lasso: ")
+    # spectra2, _ = GetSample(["B6M3"], df2)
+    # predicted = Lasso_Test(spectralMatrix, spectra2, 1000000, df1)
+    # print("predictions given real mix: ", predicted)
+    
+    # print("ABESS: ")
+    # spectra2, _ = GetSample(["B6M3"], df2)
+    # predicted = ABESS_Test(spectralMatrix, spectra2, 5, df1)
+    # print("predictions given real mix: ", predicted)
+
+  
 
     #Test on Pro, Ser, Thr mix with L0
     # print("Test with L0")

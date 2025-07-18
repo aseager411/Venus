@@ -134,6 +134,63 @@ def PlotMultipleSpectra(spectra_list, labels, bin_width=1.0, mz_min=50.0, title=
     plt.savefig(filename, dpi=300)
     plt.close()
 
+# visualize the variation of spectra for multiple runs of the same sample
+def PlotMeanAndErrorSpectrum(df, short_name, title_prefix="Mean Spectrum", bin_width=1.0, mz_min=50.0, min_separation=2):
+    matched_cols = [col for col in df.columns if col.startswith(short_name)]
+    if not matched_cols:
+        print(f"⚠️ No spectra found for '{short_name}'")
+        return
+
+    subset = df[matched_cols].astype(float)
+    if subset.empty:
+        print(f"⚠️ Data subset for '{short_name}' is empty.")
+        return
+
+    normalized = subset.div(subset.max(axis=0).replace(0, 1), axis=1)
+    mean_spectrum = normalized.mean(axis=1)
+    std_spectrum = normalized.std(axis=1)
+
+    x = np.arange(len(mean_spectrum)) * bin_width + mz_min
+
+    plt.figure(figsize=(10, 4))
+    plt.plot(x, mean_spectrum, label=f"Mean of {short_name}", linewidth=1.2, color='black')
+
+    # --- Filter major peaks ---
+    major_mask = mean_spectrum >= 0.05
+    major_indices = mean_spectrum[major_mask].sort_values(ascending=False).index.tolist()
+
+    # Suppress nearby peaks
+    # Convert Series index to integer positions (row numbers)
+    all_indices = mean_spectrum.index.to_list()
+    selected_positions = []
+    for idx in major_indices:
+        i = all_indices.index(idx)
+        if all(abs(i - sel) >= min_separation for sel in selected_positions):
+            selected_positions.append(i)
+
+    major_x = x[selected_positions]
+    major_y = mean_spectrum.iloc[selected_positions]
+    major_err = std_spectrum.iloc[selected_positions]
+
+
+    # Plot red error bars with caps
+    plt.errorbar(major_x, major_y, yerr=major_err, fmt='o', color='red',
+                 ecolor='red', elinewidth=1, capsize=3, markeredgewidth=0.5,
+                 markersize=3, label='±1σ (major peaks)')
+
+    plt.xlabel('m/z')
+    plt.ylabel('Normalized Intensity')
+    plt.title(f"{title_prefix}: {short_name}")
+    plt.legend(fontsize=8)
+    plt.grid(True)
+    plt.tight_layout()
+    filename = f"{title_prefix.replace(' ', '_')}_{short_name}.png"
+    plt.savefig(filename, dpi=300)
+    plt.close()
+
+
+
+###maybe delete these pretty useless
 #visualize similarity of molecular groups
 def plot_pca_by_group(A, group_labels, molecule_labels=None, n_components=2):
     """
@@ -216,6 +273,7 @@ def plot_umap_by_group(A, group_labels, molecule_labels=None, n_neighbors=5, min
     plt.tight_layout()
     plt.savefig("UMAP.png", dpi=300)
     plt.close()
+    
 ###################
 #  MAIN FUNCTION  #
 ###################
@@ -229,6 +287,10 @@ def main():
     samples, df2 = LoadRealMatrix(mixtures)
     mixture_names = df2.columns.tolist()
 
+    # PlotMeanAndErrorSpectrum(df1, short_name="Sulfur", title_prefix="Mean Spectrum - Individual")
+    # PlotMeanAndErrorSpectrum(df2, short_name="B6M2", title_prefix="Mean Spectrum - Mixture")
+    
+    
     # meta = pd.read_csv("mass_spectra_metadata_individual.csv")  # Assumes this file has 'molecule' and 'group' columns
 
     # # Ensure matching order between df1.columns and metadata
@@ -314,7 +376,7 @@ def main():
     # spectra, names = GetSample(['N-methylpyrrole', '246-Trimethylpyridine', 'Nile red', 'Methylcyclopentane'], df1)
     # PlotSingleSpectra(spectra, title=f"Artificial Sample: {' + '.join(names)}")
 
-    spectra, names = GetSample(["Benzene"], df1)
+    spectra, names = GetSample(["d-rib"], df1)
     PlotSingleSpectra(spectra, title=f"Sample: {' + '.join(names)}")
     
     # spectra1, _ = GetSample(["Dodeca"], df1)

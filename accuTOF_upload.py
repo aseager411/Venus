@@ -9,7 +9,7 @@ import pandas as pd
 from pathlib import Path
 
 # Adjust this to your folder
-base_dir = Path("/Users/alexseager/Desktop/Summer Work 2025/MS_Data")
+base_dir = Path("/Users/alexseager/Desktop/Summer_Work_2025/MS_Data")
 
 # Bin width (assumed fixed at 1.0)
 bin_width = 1.0
@@ -22,6 +22,7 @@ metadata_mixtures = []
 
 # Load files
 for file in base_dir.rglob("*.txt"):
+    print(f"Loaded {len(spectra_individual)} individual spectra and {len(spectra_mixtures)} mixtures.")
     try:
         relative_parts = file.relative_to(base_dir).parts
     except ValueError:
@@ -37,23 +38,47 @@ for file in base_dir.rglob("*.txt"):
     # Read the data
     df = pd.read_csv(file, sep="\t", header=None, names=["mz", "intensity"])
 
-    if top_group == "Individual" and len(relative_parts) >= 3:
-        group_name = relative_parts[1]  # e.g. 'Amino Acids'
-        spectra_individual[mol_name] = df
+    if top_group == "Individual":
+        if len(relative_parts) >= 3:
+            group_name = relative_parts[1]
+            molecule_folder = relative_parts[2]
+        elif len(relative_parts) == 2:
+            group_name = relative_parts[1]
+            molecule_folder = mol_name
+        else:
+            group_name = "Ungrouped"
+            molecule_folder = mol_name
+
+        mol_name = filename.split("_")[0]   # "Sulfur"
+        mol_id = filename                   # full name without extension
+
+        spectra_individual[mol_id] = df
         metadata_individual.append({
-            "molecule": mol_name,
+            "molecule": mol_id,
+            "short_molecule": mol_name,
             "group": group_name,
             "file": str(file)
         })
 
+
+
     elif top_group == "Mixtures":
-        group_name = "Ungrouped"
-        spectra_mixtures[mol_name] = df
+        if len(relative_parts) >= 2:
+            group_name = relative_parts[-2]  # folder immediately above the file
+        else:
+            group_name = "Ungrouped"
+
+        mol_name = filename.split("_")[0]   # short name like "MixA"
+        mol_id = filename                   # full filename without extension
+
+        spectra_mixtures[mol_id] = df
         metadata_mixtures.append({
-            "molecule": mol_name,
+            "molecule": mol_id,
+            "short_molecule": mol_name,
             "group": group_name,
             "file": str(file)
         })
+
 
 # Determine common mz bin range across both datasets
 all_mz = pd.concat([

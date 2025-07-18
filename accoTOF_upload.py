@@ -42,10 +42,12 @@ for file in base_dir.rglob("*.txt"):
         group_name = relative_parts[1]  # e.g. 'Amino Acids'
         spectra_individual[mol_name] = df
         metadata_individual.append({
-            "molecule": mol_name,
-            "group": group_name,
-            "file": str(file)
-        })
+        "molecule": mol_name,
+        "group": group_name,
+        "file": str(file),
+        "short_molecule": mol_name
+    })
+
 
     elif top_group == "Mixtures":
         if len(relative_parts) >= 2:
@@ -55,10 +57,11 @@ for file in base_dir.rglob("*.txt"):
             
         spectra_mixtures[mol_name] = df
         metadata_mixtures.append({
-            "molecule": mol_name,
-            "group": group_name,
-            "file": str(file)
-        })
+        "molecule": mol_name,
+        "group": group_name,
+        "file": str(file)
+    })
+
 
 # Determine common mz bin range across both datasets
 all_mz = pd.concat([
@@ -89,11 +92,6 @@ matrix_mixtures = build_matrix(spectra_mixtures)
 # Convert metadata to DataFrames
 meta_individual = pd.DataFrame(metadata_individual)
 meta_mixtures = pd.DataFrame(metadata_mixtures)
-
-if not meta_individual.empty:
-    meta_individual["short_molecule"] = meta_individual["molecule"].apply(lambda x: x.split("_")[0])
-if not meta_mixtures.empty:
-    meta_mixtures["short_molecule"] = meta_mixtures["molecule"].apply(lambda x: x.split("_")[0])
 
 # Save to CSV
 matrix_individual.to_csv("mass_spectra_individual.csv")
