@@ -191,10 +191,10 @@ def Split_Model_Test(spectralMatrix, known, a):
 ###################
 
 def main():
-    file = "Full_GNPS_matrix.csv"
+    file = "mass_spectra_individual.csv"
     A, df = LoadRealMatrix(file)
 
-    Model_Test(A, 50, False, score_fn=strict_recall_score, sampleRange = 50)
+    Model_Test(A, 50, True, score_fn=strict_recall_score, sampleRange = 50)
     # spectra, trueMolecules = GetSampleSpectrum(2, A)
     # print("true molecules: ", trueMolecules)
     # predictedMolecules = ABESS(A, spectra, 10)

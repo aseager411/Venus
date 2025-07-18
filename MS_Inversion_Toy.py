@@ -305,6 +305,7 @@ def Model_Test(spectralMatrix, a, noise=True, score_fn=f_beta, sampleRange = 20)
         #Change model here
         x_sol = ABESS(spectralMatrix, noisySpectra, a, exhaustive_k=True)
 
+        #change required concentration here
         gamma = 0.0001
         if isinstance(x_sol[0], tuple):
             predictedMolecules = [name for (name, coef) in x_sol if abs(coef) > gamma]
