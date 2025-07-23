@@ -176,15 +176,14 @@ def main():
     # # print(individual_names)
 
 
-    print("True molecules: 1: serine, 2: histidine, 3: sodium n-decyl sulfate (sodium salt), 4: d-(-)-ribose")
-
+    print("True molecules: 1: ammonium sulfate2: ammonium hydrogen sulfate3: iron (III) oxide4: iron (III) sulfate hydrate5: sulfur")
     print("Lasso: ")
-    spectra2, _ = GetSample(["B6M2"], df2)
+    spectra2, _ = GetSample(["B7M3"], df2)
     predicted = Lasso_Test(spectralMatrix, spectra2, 1000000, df1)
     print("predictions given real mix: ", predicted)
     
     print("ABESS: ")
-    spectra2, _ = GetSample(["B6M2"], df2)
+    spectra2, _ = GetSample(["B7M3"], df2)
     predicted = ABESS_Test(spectralMatrix, spectra2, 5, df1)
     print("predictions given real mix: ", predicted)
 

@@ -1,5 +1,5 @@
 # Author: Alex Seager
-# Last Version: 7/8/25
+# Last Version: 7/22/25
 #
 # Description: Upload and process raw txt data from MIT accuTOF
 # Tasks: Split the data into two matrices for Individual and Mixtures
@@ -8,11 +8,11 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 
-# Adjust this to your folder
+# Adjust this to the folder where you put the data
 base_dir = Path("/Users/alexseager/Desktop/Summer_Work_2025/MS_Data")
 
 
-# Bin width (assumed fixed at 1.0)
+# M/Z Bin width (assumed fixed at 1.0)
 bin_width = 1.0
 
 # Containers for spectra and metadata
@@ -44,7 +44,7 @@ for file in base_dir.rglob("*.txt"):
         metadata_individual.append({
         "molecule": mol_name,
         "group": group_name,
-        "file": str(file),
+        "file": str(file), 
         "short_molecule": mol_name
     })
 

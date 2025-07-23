@@ -376,7 +376,7 @@ def main():
     # spectra, names = GetSample(['N-methylpyrrole', '246-Trimethylpyridine', 'Nile red', 'Methylcyclopentane'], df1)
     # PlotSingleSpectra(spectra, title=f"Artificial Sample: {' + '.join(names)}")
 
-    spectra, names = GetSample(["d-rib"], df1)
+    spectra, names = GetSample(["Sulfur"], df1)
     PlotSingleSpectra(spectra, title=f"Sample: {' + '.join(names)}")
     
     # spectra1, _ = GetSample(["Dodeca"], df1)

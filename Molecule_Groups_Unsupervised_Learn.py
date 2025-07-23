@@ -1,11 +1,9 @@
 # Author: Alex Seager
 # Last Version: 7/7/25
 #
-# Description: I am attempting to learn on real data to classify important groups and 
-# other likely background species. 
-# more exploratory
-
-# not working very well at all
+# Description: Attempting to learn to classify important molecules by group.
+# 
+# largely exploratory, no useful conclusions
 
 import numpy as np
 import pandas as pd
