@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from matplotlib import colormaps
-import umap
+import seaborn as sns
 
 
 # import data from csv
@@ -273,7 +273,49 @@ def plot_umap_by_group(A, group_labels, molecule_labels=None, n_neighbors=5, min
     plt.tight_layout()
     plt.savefig("UMAP.png", dpi=300)
     plt.close()
-    
+
+
+
+## visualizing whole dataset
+def PlotSpectralHeatmap(A, molecule_names, bin_width=1.0, mz_min=50.0, normalize=True, title="Spectral Heatmap"):
+    """
+    A: 2D numpy array (num_bins, num_molecules)
+    molecule_names: list of molecule names corresponding to columns in A
+    """
+    if normalize:
+        norms = np.linalg.norm(A, axis=0)
+        norms[norms == 0] = 1
+        A = A / norms
+
+    A_T = A.T  # Now shape is (num_molecules, num_bins)
+
+    num_molecules, num_bins = A_T.shape
+    aspect_ratio = num_bins / num_molecules
+
+    plt.figure(figsize=(min(20, aspect_ratio * 6), max(6, num_molecules * 0.3)))
+    ax = sns.heatmap(
+        A_T,
+        cmap="Greys",  # black (0) to white (1)
+        cbar_kws={'label': 'Normalized Intensity'},
+        yticklabels=molecule_names,
+        square=True
+    )
+
+    # Format x-axis ticks to show m/z values
+    x_ticks = np.arange(0, num_bins, max(1, num_bins // 20))
+    x_labels = [f"{mz_min + i * bin_width:.0f}" for i in x_ticks]
+    ax.set_xticks(x_ticks)
+    ax.set_xticklabels(x_labels, rotation=45, ha='right', fontsize=7)
+
+    ax.set_xlabel("m/z")
+    ax.set_ylabel("Molecule")
+    ax.set_title(title)
+
+    plt.tight_layout()
+    #plt.show()
+    plt.savefig(f"{title.replace(' ', '_')}.png", dpi=300)
+    plt.close()
+
 ###################
 #  MAIN FUNCTION  #
 ###################
@@ -286,6 +328,8 @@ def main():
     mixtures = "mass_spectra_mixtures.csv"
     samples, df2 = LoadRealMatrix(mixtures)
     mixture_names = df2.columns.tolist()
+
+    PlotSpectralHeatmap(spectralMatrix, individual_names, title="Heatmap of Normalized Spectra")
 
     # PlotMeanAndErrorSpectrum(df1, short_name="Sulfur", title_prefix="Mean Spectrum - Individual")
     # PlotMeanAndErrorSpectrum(df2, short_name="B6M2", title_prefix="Mean Spectrum - Mixture")
@@ -376,8 +420,8 @@ def main():
     # spectra, names = GetSample(['N-methylpyrrole', '246-Trimethylpyridine', 'Nile red', 'Methylcyclopentane'], df1)
     # PlotSingleSpectra(spectra, title=f"Artificial Sample: {' + '.join(names)}")
 
-    spectra, names = GetSample(["Sulfur"], df1)
-    PlotSingleSpectra(spectra, title=f"Sample: {' + '.join(names)}")
+    # spectra, names = GetSample(["Sulfur"], df1)
+    # PlotSingleSpectra(spectra, title=f"Sample: {' + '.join(names)}")
     
     # spectra1, _ = GetSample(["Dodeca"], df1)
     # spectra2, _ = GetSample(["undeca"], df1)

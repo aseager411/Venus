@@ -143,17 +143,19 @@ def GetSampleSpectrum(sampleComplexity, spectralMatrix):
 #            vector spectra -> a spectral sample
 # Returns:  vector -> the given spectra with noise added
 def AddNoise(snr, spectra):
-    # determine which values to add noise to (all the are not zero)
-    mask = (spectra != 0)
-    # multiplicative noise stddev
-    sigma = 1.0 / np.sqrt(snr)
-    # draw factors ~ N(1, sigma^2)
+    spectra = spectra.copy()
+    max_peak = np.max(spectra)
+    if max_peak == 0:
+        return spectra  # nothing to add noise to
+
+    # multiplicative noise standard deviation relative to max peak
+    sigma = 1.0 / snr  # σ of multiplicative factor
     factors = np.random.normal(loc=1.0, scale=sigma, size=spectra.shape)
-    #print("noise factors: ", factors)
-    # apply only to non-zero entries
-    noisy = spectra.copy()
-    noisy[mask] = spectra[mask] * factors[mask]
-    return noisy
+
+    mask = (spectra != 0)
+    spectra[mask] = spectra[mask] * factors[mask]
+    return spectra
+
 
 # Plot given spectra
 # 

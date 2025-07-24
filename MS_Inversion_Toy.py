@@ -108,11 +108,9 @@ def L_Zero(matrix, spectra, criterion='AIC', max_support=4, n_jobs=-1):
     if best_combo is not None:
         x_full[np.array(best_combo)] = best_factors
 
-    print("L0 ran")
+    #print("L0 ran")
 
     return x_full
-
-
 
 
 # Linear fit with L1 term which pulls coefficients to zero
@@ -138,7 +136,7 @@ def Lasso_L1(matrix, spectra, alpha):
     # Compute R^2 manually
     r2 = r2_score(spectra, y_hat)
 
-    print("Lasso ran")
+    #print("Lasso ran")
 
     return x_hat
 
@@ -312,7 +310,7 @@ def Model_Test(spectralMatrix, a, noise=True, score_fn=f_beta, sampleRange = 20)
 
         noisySpectra = AddNoise(snr, s) if noise else s
         #Change model here
-        x_sol = Lasso_L1_With_Cv(spectralMatrix, noisySpectra) #, 50, exhaustive_k = True)
+        x_sol = ABESS(spectralMatrix, noisySpectra, sMax = 50) #, 50, exhaustive_k = True)
 
         #change required concentration here
         gamma = 0.001

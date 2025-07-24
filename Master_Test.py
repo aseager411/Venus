@@ -26,7 +26,7 @@ from ABESS import (
     ABESS
 )
 
-MAX_SUPPORT_L0 = 3  # Define L0 support limit
+MAX_SUPPORT_L0 = 2 # Define your L0 support here
 
 # Import and process spectral matrix, averaging duplicate molecule columns
 def LoadRealMatrix(csv_path, numMolecules=None, numWavelengths=None, normalize=True):
@@ -56,11 +56,38 @@ def LoadRealMatrix(csv_path, numMolecules=None, numWavelengths=None, normalize=T
     return A, grouped_df
 
 def safe_ABESS(A, b, threshold=1e-4):
-    result = ABESS(A, b, sMax=25, exhaustive_k= True)
+    result = ABESS(A, b, sMax=25, exhaustive_k=True)
+    
+    # Result: list of (name or index, coef)
+    if isinstance(result[0][0], str):
+        # If molecule names are returned, convert back to index assuming A columns are ordered
+        raise ValueError("ABESS returned names, but indexing is expected. Provide df to ABESS or remap here.")
+    
     return [i for i, coef in result if abs(coef) > threshold]
 
+def safe_L0(A, b, threshold=1e-4, max_support=MAX_SUPPORT_L0):
+    x_hat = L_Zero(A, b, criterion='AIC', max_support=max_support)
+    return [i for i, coef in enumerate(x_hat) if abs(coef) > threshold]
 
-def run_single_trial(func, A, mode, x, COMPLEXITY):
+def safe_Lasso(A, b, threshold=1e-4, alpha=1e-5):
+    x_hat = Lasso_L1(A, b, alpha=alpha)
+    return [i for i, coef in enumerate(x_hat) if abs(coef) > threshold]
+
+
+def run_abess_trial(spectralMatrix, mode, x, COMPLEXITY):
+    return run_single_trial(safe_ABESS, spectralMatrix, mode, x, COMPLEXITY, method_name="ABESS")
+
+def run_l0_trial(spectralMatrix, mode, x, COMPLEXITY):
+    return run_single_trial(safe_L0, spectralMatrix, mode, x, COMPLEXITY, method_name="L0")
+
+def run_lasso_trial(spectralMatrix, mode, x, COMPLEXITY):
+    return run_single_trial(safe_Lasso, spectralMatrix, mode, x, COMPLEXITY, method_name="Lasso")
+
+
+
+def run_single_trial(func, A, mode, x, COMPLEXITY, method_name="Unknown"):
+    print(f"{method_name} ran") 
+
     if mode == 'complexity':
         s, trueMols = GetSampleSpectrum(x, A)
         pred = func(A, s)
@@ -99,24 +126,25 @@ def run_single_trial(func, A, mode, x, COMPLEXITY):
     return f_beta(trueMols, pred)
 
 
+from joblib import Parallel, delayed
+import numpy as np
+import matplotlib.pyplot as plt
 
-def master_plot(spectralMatrix, mode='complexity', x_values=None, num_trials=5):
+def master_plot(spectralMatrix, mode='complexity', x_values=None, num_trials=5, max_support = MAX_SUPPORT_L0):
+
     methods = {
-        "Lasso": lambda A, b: [i for i, v in enumerate(Lasso_L1(A, b, alpha=0.00001)) if v > 1e-4],
-        "L0": lambda A, b: [i for i, v in enumerate(L_Zero(A, b, criterion='AIC', max_support=MAX_SUPPORT_L0)) if v > 1e-4],
+        "Lasso": safe_Lasso,
+        "L0": safe_L0,
         "ABESS": safe_ABESS
     }
 
-    # Default parameters
-    SNR = 10000
-    COMPLEXITY = 5
-    LIBRARYSIZE = spectralMatrix.shape[1]
 
+    COMPLEXITY = 10
     if x_values is None:
         if mode == 'complexity':
             x_values = list(range(1, 25))
         elif mode == 'snr':
-            x_values = [10000, 1000, 100, 10, 8, 5, 3, 2, 1]
+            x_values = [1000000, 100000, 10000, 1000, 100, 10, 5, 2, 1, 0.5, 0.2, 0.1]
         elif mode == 'concentrations':
             x_values = [1, 5, 10, 50, 100, 1000, 10000]
         elif mode == 'library_size':
@@ -126,28 +154,52 @@ def master_plot(spectralMatrix, mode='complexity', x_values=None, num_trials=5):
         else:
             raise ValueError("Invalid mode")
 
+    # === 1. Dispatcher ===
+    def run_dispatch(method, func, A, mode, x, COMPLEXITY):
+        if method == "L0":
+            if (mode == "complexity" and x > max_support) or (mode != "complexity" and COMPLEXITY > max_support):
+                print(f">>> SKIP {method} | x = {x} due to max_support")
+                return method, x, np.nan
+
+        try:
+            score = run_single_trial(func, A, mode, x, COMPLEXITY, method_name=method)
+            return method, x, score
+        except Exception as e:
+            return method, x, np.nan
+
+
+    # === 2. Create jobs ===
+    jobs = [
+        (method, func, spectralMatrix, mode, x, COMPLEXITY)
+        for x in x_values
+        for method, func in methods.items()
+        for _ in range(num_trials)
+    ]
+
+    # === 3. Run jobs in parallel ===
+    raw_results = Parallel(n_jobs=-1, backend='loky')(
+        delayed(run_dispatch)(method, func, A, mode, x, COMPLEXITY)
+        for (method, func, A, mode, x, COMPLEXITY) in jobs
+    )
+
+    # === Count how many times each method ran ===
+    from collections import Counter
+    method_counter = Counter((m for (m, _, _) in raw_results))
+    print("Run counts:", dict(method_counter))
+
+
+    # === 4. Aggregate ===
     results = {method: [] for method in methods}
+    for method in methods:
+        for x in x_values:
+            scores = [
+                score for (m, xv, score) in raw_results
+                if m == method and xv == x
+            ]
+            avg_score = np.mean(scores) if scores else np.nan
+            results[method].append(avg_score)
 
-    for x in x_values:
-        for method, func in methods.items():
-            # Skip L0 if mixture complexity exceeds its support size
-            if method == "L0" and mode == "complexity" and x > MAX_SUPPORT_L0:
-                results[method].append(np.nan)
-                continue
-
-            if method in ["ABESS", "L0"]:
-                scores = Parallel(n_jobs=-1)(
-                    delayed(run_single_trial)(func, spectralMatrix, mode, x, COMPLEXITY)
-                    for _ in range(num_trials)
-                )
-            else:  # Lasso or any fast method
-                scores = [
-                    run_single_trial(func, spectralMatrix, mode, x, COMPLEXITY)
-                    for _ in range(num_trials)
-                ]
-
-            results[method].append(np.mean(scores))
-# plotting
+    # === Plotting ===
     xlabel = {
         'complexity': "Number of Molecules in Mixture",
         'snr': "Signal-to-Noise Ratio",
@@ -156,14 +208,12 @@ def master_plot(spectralMatrix, mode='complexity', x_values=None, num_trials=5):
         'known_proportion': "Proportion of Known Molecules in Library"
     }[mode]
 
-
     plot_styles = {
-    "Lasso": {'color': 'blue', 'marker': 'o', 'markersize': 6},
-    "ABESS": {'color': 'green', 'marker': '^', 'markersize': 6},
-    "L0": {'color': 'orange', 'marker': 's', 'markersize': 6}
-}
+        "Lasso": {'color': 'blue', 'marker': 'o', 'markersize': 6},
+        "ABESS": {'color': 'green', 'marker': '^', 'markersize': 6},
+        "L0": {'color': 'orange', 'marker': 's', 'markersize': 6}
+    }
 
-    # Ensure L0 is plotted last for visibility
     method_order = ["Lasso", "ABESS", "L0"]
     for method in method_order:
         y = results[method]
@@ -178,25 +228,32 @@ def master_plot(spectralMatrix, mode='complexity', x_values=None, num_trials=5):
             zorder=3 if method == "L0" else 2,
             **style
         )
-    # Create clean legend from unique method labels
+
     handles, labels = plt.gca().get_legend_handles_labels()
-    unique = dict(zip(labels, handles))  # Removes duplicates while preserving last handle
+    unique = dict(zip(labels, handles))
     plt.legend(unique.values(), unique.keys())
+
     plt.xlabel(xlabel)
-    plt.ylabel("Average Fβ Score")
+    plt.ylabel("Average F Score (10 samples)")
+    plt.ylim(-0.05, 1.05)  # fixed y-axis range for all plots
     plt.title(f"Model Comparison: {mode}")
     plt.grid(True)
-    plt.legend()
+
+    if mode == 'snr':
+        plt.xscale('log')
+        plt.gca().invert_xaxis()
+
     plt.tight_layout()
     plt.savefig("Models_test.png", dpi=300)
-    plt.show()
+    #plt.show()
+
 
 
 def main():
-    print("hello")
+    print("starting...")
     file = "mass_spectra_individual.csv"
     A, df = LoadRealMatrix(file)
-    master_plot(A, mode='complexity', x_values=None, num_trials=1)
+    master_plot(A, mode='snr', x_values=None, num_trials=10)
 
 
 if __name__ == "__main__":

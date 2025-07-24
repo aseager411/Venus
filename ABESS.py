@@ -84,7 +84,7 @@ def ABESS(matrix, spectra, sMax, df=None, k=1, exhaustive_k=False):
         names = best_molecules
 
     result = list(zip(names, best_coefficients))
-    print(f"Best model found at s = {best_s}, k = {best_k} with SIC = {best_sic:.2f}")
+    #print(f"Best model found at s = {best_s}, k = {best_k} with SIC = {best_sic:.2f}")
     return result
 
 # The splicing algorithm to find the best s molecules  
