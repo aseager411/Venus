@@ -108,6 +108,8 @@ def L_Zero(matrix, spectra, criterion='AIC', max_support=4, n_jobs=-1):
     if best_combo is not None:
         x_full[np.array(best_combo)] = best_factors
 
+    print("L0 ran")
+
     return x_full
 
 
@@ -135,6 +137,8 @@ def Lasso_L1(matrix, spectra, alpha):
 
     # Compute R^2 manually
     r2 = r2_score(spectra, y_hat)
+
+    print("Lasso ran")
 
     return x_hat
 

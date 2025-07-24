@@ -60,11 +60,10 @@ def safe_ABESS(A, b, threshold=1e-4):
     return [i for i, coef in result if abs(coef) > threshold]
 
 
-def run_single_trial(func, A, mode, x, SNR, COMPLEXITY, KNOWNPROPORTION):
+def run_single_trial(func, A, mode, x, COMPLEXITY):
     if mode == 'complexity':
         s, trueMols = GetSampleSpectrum(x, A)
-        b = AddNoise(SNR, s)
-        pred = func(A, b)
+        pred = func(A, s)
 
     elif mode == 'snr':
         s, trueMols = GetSampleSpectrum(COMPLEXITY, A)
@@ -74,9 +73,8 @@ def run_single_trial(func, A, mode, x, SNR, COMPLEXITY, KNOWNPROPORTION):
     elif mode == 'library_size':
         full_indices = np.random.choice(A.shape[1], size=x, replace=False)
         A_crop = A[:, full_indices]
-        s, trueMols = GetSampleSpectrum(3, A_crop)
-        b = AddNoise(SNR, s)
-        pred = func(A_crop, b)
+        s, trueMols = GetSampleSpectrum(COMPLEXITY, A_crop)
+        pred = func(A_crop, s)
         trueMols = [full_indices[i] for i in trueMols]
         pred = [full_indices[i] for i in pred]
 
@@ -85,17 +83,15 @@ def run_single_trial(func, A, mode, x, SNR, COMPLEXITY, KNOWNPROPORTION):
         weights = np.geomspace(1, 1/x, num=COMPLEXITY)
         weights /= weights.sum()
         s = A[:, indices] @ weights
-        b = AddNoise(SNR, s)
-        pred = func(A, b)
+        pred = func(A, s)
         trueMols = indices.tolist()
 
     elif mode == 'known_proportion':
-        known_size = int(KNOWNPROPORTION * A.shape[1])
+        known_size = int(x * A.shape[1])
         known_indices = np.random.choice(A.shape[1], size=int(x * A.shape[1]), replace=False)
         A_known = A[:, known_indices]
         s, trueMols = GetSampleSpectrum(COMPLEXITY, A)
-        b = AddNoise(SNR, s)
-        pred = func(A_known, b)
+        pred = func(A_known, s)
         trueMols_in_known = [i for i in trueMols if i in known_indices]
         pred = [known_indices[i] for i in pred]
         trueMols = trueMols_in_known
@@ -107,7 +103,7 @@ def run_single_trial(func, A, mode, x, SNR, COMPLEXITY, KNOWNPROPORTION):
 def master_plot(spectralMatrix, mode='complexity', x_values=None, num_trials=5):
     methods = {
         "Lasso": lambda A, b: [i for i, v in enumerate(Lasso_L1(A, b, alpha=0.00001)) if v > 1e-4],
-        "L0": lambda A, b: [i for i, v in enumerate(L_Zero(A, b, max_support=MAX_SUPPORT_L0)) if v > 1e-4],
+        "L0": lambda A, b: [i for i, v in enumerate(L_Zero(A, b, criterion='AIC', max_support=MAX_SUPPORT_L0)) if v > 1e-4],
         "ABESS": safe_ABESS
     }
 
@@ -115,8 +111,6 @@ def master_plot(spectralMatrix, mode='complexity', x_values=None, num_trials=5):
     SNR = 10000
     COMPLEXITY = 5
     LIBRARYSIZE = spectralMatrix.shape[1]
-    CONCENTRATIONS = 1
-    KNOWNPROPORTION = 1
 
     if x_values is None:
         if mode == 'complexity':
@@ -143,22 +137,17 @@ def master_plot(spectralMatrix, mode='complexity', x_values=None, num_trials=5):
 
             if method in ["ABESS", "L0"]:
                 scores = Parallel(n_jobs=-1)(
-                    delayed(run_single_trial)(func, spectralMatrix, mode, x, SNR, COMPLEXITY, KNOWNPROPORTION)
+                    delayed(run_single_trial)(func, spectralMatrix, mode, x, COMPLEXITY)
                     for _ in range(num_trials)
                 )
             else:  # Lasso or any fast method
                 scores = [
-                    run_single_trial(func, spectralMatrix, mode, x, SNR, COMPLEXITY, KNOWNPROPORTION)
+                    run_single_trial(func, spectralMatrix, mode, x, COMPLEXITY)
                     for _ in range(num_trials)
                 ]
 
             results[method].append(np.mean(scores))
-
-
-    # Plotting
-    for method in methods:
-        plt.plot(x_values, results[method], label=method, marker='o')
-
+# plotting
     xlabel = {
         'complexity': "Number of Molecules in Mixture",
         'snr': "Signal-to-Noise Ratio",
@@ -167,14 +156,40 @@ def master_plot(spectralMatrix, mode='complexity', x_values=None, num_trials=5):
         'known_proportion': "Proportion of Known Molecules in Library"
     }[mode]
 
+
+    plot_styles = {
+    "Lasso": {'color': 'blue', 'marker': 'o', 'markersize': 6},
+    "ABESS": {'color': 'green', 'marker': '^', 'markersize': 6},
+    "L0": {'color': 'orange', 'marker': 's', 'markersize': 6}
+}
+
+    # Ensure L0 is plotted last for visibility
+    method_order = ["Lasso", "ABESS", "L0"]
+    for method in method_order:
+        y = results[method]
+        x_filtered = [x for x, v in zip(x_values, y) if not np.isnan(v)]
+        y_filtered = [v for v in y if not np.isnan(v)]
+
+        style = plot_styles[method]
+        plt.plot(
+            x_filtered, y_filtered,
+            label=method,
+            linestyle='-' if len(x_filtered) > 1 else 'None',
+            zorder=3 if method == "L0" else 2,
+            **style
+        )
+    # Create clean legend from unique method labels
+    handles, labels = plt.gca().get_legend_handles_labels()
+    unique = dict(zip(labels, handles))  # Removes duplicates while preserving last handle
+    plt.legend(unique.values(), unique.keys())
     plt.xlabel(xlabel)
     plt.ylabel("Average Fβ Score")
     plt.title(f"Model Comparison: {mode}")
     plt.grid(True)
     plt.legend()
     plt.tight_layout()
-    plt.show()
     plt.savefig("Models_test.png", dpi=300)
+    plt.show()
 
 
 def main():
