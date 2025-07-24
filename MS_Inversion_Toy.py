@@ -95,7 +95,6 @@ def L_Zero(matrix, spectra, criterion='AIC', max_support=4, n_jobs=-1):
             for cols in combos
         )
 
-        # Find best scoring model
         for res in results:
             if res is not None:
                 score, cols, x_hat = res
@@ -104,9 +103,13 @@ def L_Zero(matrix, spectra, criterion='AIC', max_support=4, n_jobs=-1):
                     best_combo = cols
                     best_factors = x_hat
 
-    # Return result as list of (index, coefficient) tuples
-    result = list(zip(best_combo, best_factors)) if best_combo else []
-    return result
+    # Format output to match Lasso: full-length coefficient vector
+    x_full = np.zeros(n_vars)
+    if best_combo is not None:
+        x_full[np.array(best_combo)] = best_factors
+
+    return x_full
+
 
 
 
@@ -135,31 +138,33 @@ def Lasso_L1(matrix, spectra, alpha):
 
     return x_hat
 
-### Need to revisit 
-# Linear fit with L1 term and auto tuning
-#
-# Arguments: matrix matrix -> the matrix of molecular spectra
-#            vector spectra -> the sample spectrum which in a linear combo of matrix columns
-# Returns:   vector -> the guess for which molecules at what concentrations made up the sample
-def Lasso_L1_With_Cv(matrix, spectra):
-    # Generate alphas to try
-    alphas = np.logspace(-4, 0, 50)
-    # Set up LassoCV
-    lasso_cv = LassoCV(alphas=alphas, cv=5, fit_intercept=False, max_iter=10000)
-    # Fit to data, selecting the alpha that minimizes CV error
+
+# find a good alpha via cross-validation with many samples
+def Lasso_L1_With_Cv(matrix, spectra, alphas=np.logspace(-5, 0, 50)):
+    """
+    Fits a Lasso regression with cross-validation to select the best alpha.
+
+    Parameters:
+        matrix (ndarray): 2D array where each column is a reference molecular spectrum
+        spectra (ndarray): 1D array of the mixed/observed spectrum
+        alphas (array-like): List of alpha values to search over (default: logspace)
+
+    Returns:
+        x_hat (ndarray): Coefficient vector indicating contributions of each reference
+        best_alpha (float): Chosen alpha value
+        r2 (float): R^2 score of the fit
+    """
+    lasso_cv = LassoCV(alphas=alphas, fit_intercept=False, max_iter=10000, positive=True, cv=5)
     lasso_cv.fit(matrix, spectra)
-    # Extract the sparse solution and best alpha
+
     x_hat = lasso_cv.coef_
-    best_alpha = lasso_cv.alpha_
-
-    # Compute R² on the full dataset:
-    #    R² = 1 - SS_res / SS_tot
     y_hat = matrix.dot(x_hat)
-    ss_res = np.sum((spectra - y_hat) ** 2)
-    ss_tot = np.sum((spectra - np.mean(spectra)) ** 2)
-    r2 = 1 - ss_res / ss_tot if ss_tot > 0 else 0.0
+    r2 = r2_score(spectra, y_hat)
 
-    return x_hat, best_alpha, r2
+    print("Best alpha selected by cross-validation:", lasso_cv.alpha_)
+
+    return x_hat
+    
 
 
 # evaluating model predictions using F Beta
@@ -168,7 +173,7 @@ def Lasso_L1_With_Cv(matrix, spectra):
 #            vector predSet -> The molecules predicted by the model
 #            float beta     -> below one favors retrieval over ... 
 # Returns:   float -> The F score value between zero and one 
-def f_beta(trueSet, predSet, beta=0.5):
+def f_beta(trueSet, predSet, beta=1):
     def extract_name(x):
         # If it's a string or int-like, return as is
         if isinstance(x, (str, int, np.integer)):
@@ -303,10 +308,10 @@ def Model_Test(spectralMatrix, a, noise=True, score_fn=f_beta, sampleRange = 20)
 
         noisySpectra = AddNoise(snr, s) if noise else s
         #Change model here
-        x_sol = ABESS(spectralMatrix, noisySpectra, a, exhaustive_k=True)
+        x_sol = Lasso_L1_With_Cv(spectralMatrix, noisySpectra) #, 50, exhaustive_k = True)
 
         #change required concentration here
-        gamma = 0.0001
+        gamma = 0.001
         if isinstance(x_sol[0], tuple):
             predictedMolecules = [name for (name, coef) in x_sol if abs(coef) > gamma]
         else:
@@ -337,7 +342,7 @@ def Model_Test(spectralMatrix, a, noise=True, score_fn=f_beta, sampleRange = 20)
 
     ax.set_xlabel('Sample Complexity (number of molecules mixed)')
     ax.set_ylabel('Recall')
-    ax.set_title('ABESS Recovery Score vs. Sample Complexity')
+    ax.set_title('Lasso with CV Recovery Score vs. Sample Complexity')
 
     all_j_values = [j for (_, j, _) in tasks]
     max_j = max(all_j_values)

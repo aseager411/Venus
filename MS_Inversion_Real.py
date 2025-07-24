@@ -56,19 +56,36 @@ ALPHA = 0.00001
 SPLITPROPORTION = 1  # 1 -> we have data for all possible molecules, 0 -> we have no data at all 
 
 # import data from csv
+import pandas as pd
+import numpy as np
+
+# Import and process spectral matrix, averaging duplicate molecule columns
 def LoadRealMatrix(csv_path, numMolecules=None, numWavelengths=None, normalize=True):
     df_full = pd.read_csv(csv_path, index_col=0)
-    #truncate
+
+    # Truncate wavelength range
     df = df_full.loc[50:787]
 
-    A = df.values  # shape: (numWavelengths, numMolecules)
+    # Average duplicate molecule columns (by name), using updated groupby syntax
+    grouped_df = df.T.groupby(df.columns).mean().T
+
+    # Optional truncation
+    if numWavelengths is not None:
+        grouped_df = grouped_df.iloc[:numWavelengths, :]
+    if numMolecules is not None:
+        grouped_df = grouped_df.iloc[:, :numMolecules]
+
+    # Convert to matrix
+    A = grouped_df.values
 
     if normalize:
         norms = np.linalg.norm(A, axis=0)
-        norms[norms == 0] = 1  # avoid division by zero
+        norms[norms == 0] = 1
         A = A / norms
 
-    return A, df
+    print("Molecules used:", list(grouped_df.columns))
+    return A, grouped_df
+
 
 # split data into known and unknown compounds
 def Data_Split(splitProportion, spectralMatrix):
@@ -194,7 +211,7 @@ def main():
     file = "mass_spectra_individual.csv"
     A, df = LoadRealMatrix(file)
 
-    Model_Test(A, 50, True, score_fn=strict_recall_score, sampleRange = 50)
+    Model_Test(A, 50, noise = False, score_fn=f_beta, sampleRange = 50)
     # spectra, trueMolecules = GetSampleSpectrum(2, A)
     # print("true molecules: ", trueMolecules)
     # predictedMolecules = ABESS(A, spectra, 10)
