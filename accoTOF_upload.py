@@ -67,8 +67,8 @@ for file in base_dir.rglob("*.txt"):
 all_mz = pd.concat([
     df["mz"] for df in list(spectra_individual.values()) + list(spectra_mixtures.values())
 ])
-min_mz = np.floor(all_mz.min())
-max_mz = np.ceil(all_mz.max())
+min_mz = 50
+max_mz = 450
 bin_edges = np.arange(min_mz - 0.5, max_mz + 0.5 + 1e-6, bin_width)
 bin_centers = np.arange(min_mz, max_mz + 1)
 
@@ -76,14 +76,32 @@ bin_centers = np.arange(min_mz, max_mz + 1)
 def build_matrix(spectra_dict):
     matrix = pd.DataFrame(index=bin_centers)
     for mol, df in spectra_dict.items():
+        # Bin intensities
         binned, _ = np.histogram(
             df["mz"],
             bins=bin_edges,
             weights=df["intensity"]
         )
+
+        # Check if the highest peak is exactly at m/z 371
+        peak_index = np.argmax(binned)
+        peak_mz = bin_centers[peak_index]
+        if peak_mz == 371:
+            print(f"⚠️ Skipping {mol} — highest peak at m/z 371")
+            continue
+
         matrix[mol] = binned.astype(int)
+
+    # Zero out m/z = 371 bin (if it exists)
+    if 371 in matrix.index:
+        matrix.loc[371] = 0
+    # Zero out m/z = 372 bin (if it exists)
+    if 372 in matrix.index:
+        matrix.loc[372] = 0
+
     matrix.columns = [col.split("_")[0] for col in matrix.columns]
     return matrix
+
 
 # Build matrices
 matrix_individual = build_matrix(spectra_individual)

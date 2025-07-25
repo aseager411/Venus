@@ -6,7 +6,8 @@
 import numpy as np
 import pandas as pd
 import matplotlib
-matplotlib.use('Agg')  # Use a non-GUI backend for servers
+#matplotlib.use('Agg')  # Use a non-GUI backend for servers
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
@@ -277,44 +278,82 @@ def plot_umap_by_group(A, group_labels, molecule_labels=None, n_neighbors=5, min
 
 
 ## visualizing whole dataset
-def PlotSpectralHeatmap(A, molecule_names, bin_width=1.0, mz_min=50.0, normalize=True, title="Spectral Heatmap"):
+def PlotSpectralHeatmap(
+    A, molecule_names, bin_width=1.0, mz_min=50.0, mz_max=420,
+    normalize=True, title="Spectral Heatmap"
+):
     """
-    A: 2D numpy array (num_bins, num_molecules)
-    molecule_names: list of molecule names corresponding to columns in A
+    A: 2D numpy array of shape (num_bins, num_molecules)
+    Each column corresponds to a molecule. Values will be max-normalized if normalize=True.
     """
     if normalize:
-        norms = np.linalg.norm(A, axis=0)
-        norms[norms == 0] = 1
-        A = A / norms
+        max_vals = A.max(axis=0)
+        max_vals[max_vals == 0] = 1  # Prevent divide-by-zero
+        A = A / max_vals
 
-    A_T = A.T  # Now shape is (num_molecules, num_bins)
-
+    # Limit m/z bins if mz_max is specified
+    if mz_max is not None:
+        max_index = int((mz_max - mz_min) / bin_width)
+        A = A[:max_index, :]
+    
+    A_T = A.T  # shape: (num_molecules, num_bins)
     num_molecules, num_bins = A_T.shape
-    aspect_ratio = num_bins / num_molecules
 
-    plt.figure(figsize=(min(20, aspect_ratio * 6), max(6, num_molecules * 0.3)))
+    fig = plt.figure(figsize=(min(20, num_bins * 0.1), max(10, num_molecules * 0.25)), constrained_layout=True)
     ax = sns.heatmap(
         A_T,
-        cmap="Greys",  # black (0) to white (1)
+        cmap="Greys",
         cbar_kws={'label': 'Normalized Intensity'},
-        yticklabels=molecule_names,
-        square=True
+        yticklabels=molecule_names
     )
 
-    # Format x-axis ticks to show m/z values
-    x_ticks = np.arange(0, num_bins, max(1, num_bins // 20))
-    x_labels = [f"{mz_min + i * bin_width:.0f}" for i in x_ticks]
-    ax.set_xticks(x_ticks)
+    # Set x-axis ticks every 10 m/z units
+    mz_values = np.arange(mz_min, mz_min + num_bins * bin_width, bin_width)
+    x_tick_positions = np.where((mz_values - mz_min) % 10 == 0)[0]
+    x_labels = [f"{mz_values[i]:.0f}" for i in x_tick_positions]
+
+    ax.set_xticks(x_tick_positions)
     ax.set_xticklabels(x_labels, rotation=45, ha='right', fontsize=7)
+
+    # Slightly smaller Y-axis labels
+    ax.set_yticklabels(molecule_names, fontsize=6)
 
     ax.set_xlabel("m/z")
     ax.set_ylabel("Molecule")
     ax.set_title(title)
 
+    plt.show()
+    # plt.savefig(f"{title.replace(' ', '_')}.png", dpi=300, bbox_inches='tight')
+
+
+def PlotPeakFrequencyByMz(A, bin_width=1.0, mz_min=50.0, threshold=0.05, title="Peak Frequency by m/z Bin"):
+    """
+    A: 2D numpy array (num_bins, num_molecules), normalized spectra
+    Counts how many molecules have a peak > threshold in each m/z bin.
+    """
+    # Normalize each spectrum by max value (again, if needed)
+    max_vals = A.max(axis=0)
+    max_vals[max_vals == 0] = 1
+    A_norm = A / max_vals
+
+    # Count how many molecules exceed the threshold per bin
+    counts = (A_norm > threshold).sum(axis=1)  # shape: (num_bins,)
+
+    # Compute m/z values for x-axis
+    mz_bins = np.arange(len(counts)) * bin_width + mz_min
+
+    plt.figure(figsize=(12, 4))
+    plt.bar(mz_bins, counts, width=bin_width, align='center', color='black')
+
+    plt.xlabel("m/z")
+    plt.ylabel("Peak Count")
+    plt.title(title)
+    plt.grid(axis='y', linestyle='--', alpha=0.5)
+
     plt.tight_layout()
-    #plt.show()
     plt.savefig(f"{title.replace(' ', '_')}.png", dpi=300)
-    plt.close()
+    plt.show()
+
 
 ###################
 #  MAIN FUNCTION  #
@@ -328,8 +367,9 @@ def main():
     mixtures = "mass_spectra_mixtures.csv"
     samples, df2 = LoadRealMatrix(mixtures)
     mixture_names = df2.columns.tolist()
-
-    PlotSpectralHeatmap(spectralMatrix, individual_names, title="Heatmap of Normalized Spectra")
+    
+    #PlotSpectralHeatmap(spectralMatrix, individual_names, title="Heatmap of Normalized Spectra")
+    PlotPeakFrequencyByMz(spectralMatrix, threshold=0.1, title="Peak Frequency Above 0.05")
 
     # PlotMeanAndErrorSpectrum(df1, short_name="Sulfur", title_prefix="Mean Spectrum - Individual")
     # PlotMeanAndErrorSpectrum(df2, short_name="B6M2", title_prefix="Mean Spectrum - Mixture")
@@ -423,8 +463,8 @@ def main():
     # spectra, names = GetSample(["Sulfur"], df1)
     # PlotSingleSpectra(spectra, title=f"Sample: {' + '.join(names)}")
     
-    # spectra1, _ = GetSample(["Dodeca"], df1)
-    # spectra2, _ = GetSample(["undeca"], df1)
+    # spectra1, _ = GetSample(["1-naphthalenesulfonic"], df1)
+    # spectra2, _ = GetSample(["2-naphthalenesulfonic"], df1)
     # spectra3, _ = GetSample(["tridodeca"], df1)
     
     # # spectra1, _ = GetSample([('Ala', 0.011404128270954328), ('Phenanthrene', 0.2217878523929781)], df1)
@@ -437,7 +477,7 @@ def main():
     # # #LASSO guess
     # # spectra4, _ = GetSample([('N-methylpyrrole', 1.3282611345263897), ('Ala', 0.011404128270954328), ('Pyrene', 0.28486107747102996), ('Phenanthrene', 0.2217878523929781), ('16-diphenyl-135-hexatriene', 0.11069791839345598)], df1)
     # PlotMultipleSpectra(
-    #     [spectra1, spectra2, spectra 3],
+    #     [spectra1, spectra2],
     #     labels=["sample (Benzenesulfonic acid + DPH(1,6-Diphenyl-1,3,5-hexatriene) + N-methypyrrole + Pyrene)", "guessed combo: N-methylpyrrole, Ala, Pyrene, Phenanthrene, 16-diphenyl-135-hexatriene"],
     #     title="Overlay of true and closest match Spectra"
     # )
