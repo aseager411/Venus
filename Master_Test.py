@@ -56,7 +56,7 @@ def LoadRealMatrix(csv_path, numMolecules=None, numWavelengths=None, normalize=T
     return A, grouped_df
 
 def safe_ABESS(A, b, threshold=1e-4):
-    result = ABESS(A, b, sMax=25, exhaustive_k=True)
+    result = ABESS(A, b, sMax=20, exhaustive_k=True)  # for small lib
     
     # Result: list of (name or index, coef)
     if isinstance(result[0][0], str):
@@ -114,14 +114,34 @@ def run_single_trial(func, A, mode, x, COMPLEXITY, method_name="Unknown"):
         trueMols = indices.tolist()
 
     elif mode == 'known_proportion':
-        known_size = int(x * A.shape[1])
-        known_indices = np.random.choice(A.shape[1], size=int(x * A.shape[1]), replace=False)
+        total_mols = A.shape[1]
+        known_size = int(x * total_mols)
+        unknown_size = total_mols - known_size
+
+        # Split full index list into known and unknown
+        all_indices = np.arange(total_mols)
+        known_indices = np.random.choice(all_indices, size=known_size, replace=False)
+        unknown_indices = np.setdiff1d(all_indices, known_indices, assume_unique=True)
+
+        # Choose molecules for the sample
+        num_known = int(round(x * COMPLEXITY))
+        num_unknown = COMPLEXITY - num_known
+
+        true_known = np.random.choice(known_indices, size=num_known, replace=False) if num_known > 0 else np.array([], dtype=int)
+        true_unknown = np.random.choice(unknown_indices, size=num_unknown, replace=False) if num_unknown > 0 else np.array([], dtype=int)
+
+        trueMols = np.concatenate([true_known, true_unknown])
+        weights = np.ones(COMPLEXITY) / COMPLEXITY
+        s = A[:, trueMols] @ weights
+
+        # Run func only on known portion of A
         A_known = A[:, known_indices]
-        s, trueMols = GetSampleSpectrum(COMPLEXITY, A)
         pred = func(A_known, s)
-        trueMols_in_known = [i for i in trueMols if i in known_indices]
+
+        # Adjust prediction indices back to full space
         pred = [known_indices[i] for i in pred]
-        trueMols = trueMols_in_known
+        trueMols = true_known.tolist()  # only evaluate known ones
+
 
     return f_beta(trueMols, pred)
 
@@ -146,11 +166,11 @@ def master_plot(spectralMatrix, mode='complexity', x_values=None, num_trials=5, 
         elif mode == 'snr':
             x_values = [1000000, 100000, 10000, 1000, 100, 10, 5, 2, 1, 0.5, 0.2, 0.1]
         elif mode == 'concentrations':
-            x_values = [1, 5, 10, 50, 100, 1000, 10000]
+            x_values = [1, 10, 100, 1000, 10000, 100000, 1000000]
         elif mode == 'library_size':
-            x_values = list(range(20, spectralMatrix.shape[1] + 1, 5))
+            x_values = list(range(25, spectralMatrix.shape[1] + 1, 5))
         elif mode == 'known_proportion':
-            x_values = [1, 0.8, 0.6, 0.4, 0.2, 0.1, 0.05]
+            x_values = [1, 0.8, 0.6, 0.4, 0.2, 0.1]
         else:
             raise ValueError("Invalid mode")
 
@@ -243,17 +263,22 @@ def master_plot(spectralMatrix, mode='complexity', x_values=None, num_trials=5, 
         plt.xscale('log')
         plt.gca().invert_xaxis()
 
+    if mode == 'concentrations':
+        plt.xscale('log')
+
+    if mode == 'known_proportion':
+        plt.gca().invert_xaxis()
+
     plt.tight_layout()
     plt.savefig("Models_test.png", dpi=300)
     #plt.show()
-
 
 
 def main():
     print("starting...")
     file = "mass_spectra_individual.csv"
     A, df = LoadRealMatrix(file)
-    master_plot(A, mode='snr', x_values=None, num_trials=10)
+    master_plot(A, mode='library_size', x_values=None, num_trials= 20)
 
 
 if __name__ == "__main__":

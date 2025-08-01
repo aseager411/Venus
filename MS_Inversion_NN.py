@@ -287,7 +287,7 @@ def train_model(model, dataloader, loss_fn, optimizer, device, epochs=100):
 # -----------------------------
 def evaluate_model_with_noise_levels(model, spectral_matrix, molecule_names, device,
                                      snr_values=[3, 5, 8], max_complexity=25, N_per_complexity=20,
-                                     threshold=0.5, score_fn=strict_recall_score,
+                                     threshold=0.7, score_fn=strict_recall_score,
                                      noise=True):
 
     snr_colors = {3: 'C0', 5: 'C1', 8: 'C2', None: 'black'}
@@ -469,8 +469,8 @@ def main():
     metadata_file = "mass_spectra_metadata_individual.csv"
 
         # === Training Data ===
-    N_MIXTURES = 5000
-    MAX_COMPLEXITY = 5
+    N_MIXTURES = 1000
+    MAX_COMPLEXITY = 25
 
 
     X_train, Y_train, molecule_names, spectral_matrix = load_and_prepare_data(
@@ -496,7 +496,7 @@ def main():
 
     # === Dataloader Setup ===
     train_ds = SpectraDataset(X_train, Y_train)
-    train_loader = DataLoader(train_ds, batch_size=64, shuffle=True)
+    train_loader = DataLoader(train_ds, batch_size=1, shuffle=True)
 
    # === Model Setup ===
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -525,24 +525,24 @@ def main():
 
     # === Training ===
     print("Starting training...")
-    #train_model(model, train_loader, loss_fn, optimizer, device, epochs=200) 
-    train_model_with_curriculum(
-        model=model,
-        spectral_matrix=spectral_matrix,
-        loss_fn=loss_fn,
-        optimizer=optimizer,
-        device=device,
-        molecule_names=molecule_names,
-        epochs=100,
-        batch_size=256,
-        snr_schedule=[None, 8, 5, 3],   # Gradually add noise
-        mixtures_per_epoch=1000,
-        smoothing_epsilon=0.05
-    )
+    train_model(model, train_loader, loss_fn, optimizer, device, epochs=100) 
+    # train_model_with_curriculum(
+    #     model=model,
+    #     spectral_matrix=spectral_matrix,
+    #     loss_fn=loss_fn,
+    #     optimizer=optimizer,
+    #     device=device,
+    #     molecule_names=molecule_names,
+    #     epochs=100,
+    #     batch_size=256,
+    #     snr_schedule=[None, 8, 5, 3],   # Gradually add noise
+    #     mixtures_per_epoch=1000,
+    #     smoothing_epsilon=0.05
+    # )
 
     # === Evaluation ===
     #evaluate_on_fixed_test_set(model, X_test, Y_test, molecule_names, device=device)
-    evaluate_model_with_noise_levels(model, spectral_matrix=spectral_matrix, molecule_names=molecule_names, device=device, max_complexity=5, noise = True)
+    evaluate_model_with_noise_levels(model, spectral_matrix=spectral_matrix, molecule_names=molecule_names, device=device, max_complexity=25, noise = False)
 
 if __name__ == "__main__":
     main()
