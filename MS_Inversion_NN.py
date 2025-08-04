@@ -26,7 +26,8 @@ from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 import matplotlib.colors as mcolors
 
 from MS_Inversion_Toy import (
-    strict_recall_score
+    strict_recall_score,
+    f_beta
 )
 
 # -----------------------------
@@ -287,8 +288,11 @@ def train_model(model, dataloader, loss_fn, optimizer, device, epochs=100):
 # -----------------------------
 def evaluate_model_with_noise_levels(model, spectral_matrix, molecule_names, device,
                                      snr_values=[3, 5, 8], max_complexity=25, N_per_complexity=20,
-                                     threshold=0.7, score_fn=strict_recall_score,
+                                     threshold=0.5, score_fn=None,
                                      noise=True):
+    if score_fn is None:
+        # use imported f_beta with beta=1
+        score_fn = lambda true_idxs, pred_idxs: f_beta(true_idxs, pred_idxs, beta=1)
 
     snr_colors = {3: 'C0', 5: 'C1', 8: 'C2', None: 'black'}
     marker_map = {3: 'o', 5: 's', 8: '^', None: 'x'}
@@ -348,7 +352,6 @@ def evaluate_model_with_noise_levels(model, spectral_matrix, molecule_names, dev
                        s=60, alpha=0.8,
                        edgecolors='k', linewidths=0.5)
     else:
-        # All points same appearance when noise=False
         xs = [x for _, x, _ in results]
         ys = [y for _, _, y in results]
         ax.scatter(xs, ys,
@@ -359,15 +362,16 @@ def evaluate_model_with_noise_levels(model, spectral_matrix, molecule_names, dev
                    edgecolors='k', linewidths=0.5)
 
     ax.set_xlabel("Number of Molecules in Mixture")
-    ax.set_ylabel("Strict Recall Score")
+    ax.set_ylabel("F₁ Score" if score_fn.__name__ == "<lambda>" else "Score")
     ax.set_title("Model Performance vs. Mixture Complexity" + (" (Noisy)" if noise else " (Clean)"))
     ax.set_xlim(0.5, max_complexity + 0.5)
-    ax.set_ylim(-1.05, 1.05)
+    ax.set_ylim(-0.05, 1.05)
     ax.legend(title='Noise Level' if noise else 'Evaluation')
     ax.grid(True, linestyle='--', alpha=0.4)
     plt.tight_layout()
     plt.savefig("NN_Test_NoiseLevels.png", dpi=300)
     plt.show()
+
 
 def evaluate_on_fixed_test_set(model, X_test, Y_test, molecule_names, device, threshold=0.5):
     model.eval()
@@ -469,7 +473,7 @@ def main():
     metadata_file = "mass_spectra_metadata_individual.csv"
 
         # === Training Data ===
-    N_MIXTURES = 1000
+    N_MIXTURES = 25000
     MAX_COMPLEXITY = 25
 
 
@@ -496,7 +500,7 @@ def main():
 
     # === Dataloader Setup ===
     train_ds = SpectraDataset(X_train, Y_train)
-    train_loader = DataLoader(train_ds, batch_size=1, shuffle=True)
+    train_loader = DataLoader(train_ds, batch_size=128, shuffle=True)
 
    # === Model Setup ===
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
