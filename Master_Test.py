@@ -26,14 +26,14 @@ from ABESS import (
     ABESS
 )
 
-MAX_SUPPORT_L0 = 2 # Define your L0 support here
+MAX_SUPPORT_L0 = 3 # Define your L0 support here
 
 # Import and process spectral matrix, averaging duplicate molecule columns
 def LoadRealMatrix(csv_path, numMolecules=None, numWavelengths=None, normalize=True):
     df_full = pd.read_csv(csv_path, index_col=0)
 
     # Truncate wavelength range
-    df = df_full.loc[50:787]
+    df = df_full.loc[51:450]
 
     # Average duplicate molecule columns (by name), using updated groupby syntax
     grouped_df = df.T.groupby(df.columns).mean().T
@@ -55,8 +55,8 @@ def LoadRealMatrix(csv_path, numMolecules=None, numWavelengths=None, normalize=T
     #print("Molecules used:", list(grouped_df.columns))
     return A, grouped_df
 
-def safe_ABESS(A, b, threshold=1e-4):
-    result = ABESS(A, b, sMax=20, exhaustive_k=True)  # for small lib
+def safe_ABESS(A, b, threshold=1e-4, sMax=25):
+    result = ABESS(A, b, sMax=5, exhaustive_k=True)  # for small lib
     
     # Result: list of (name or index, coef)
     if isinstance(result[0][0], str):
@@ -84,13 +84,16 @@ def run_lasso_trial(spectralMatrix, mode, x, COMPLEXITY):
     return run_single_trial(safe_Lasso, spectralMatrix, mode, x, COMPLEXITY, method_name="Lasso")
 
 
-
 def run_single_trial(func, A, mode, x, COMPLEXITY, method_name="Unknown"):
-    print(f"{method_name} ran") 
+    # print(f"{method_name} ran") 
 
     if mode == 'complexity':
         s, trueMols = GetSampleSpectrum(x, A)
         pred = func(A, s)
+        # print the name of the fucntion
+        # debug output
+        if method_name == "L0":
+            print(f"[{method_name}] mode=complexity | x={x} | trueMols={trueMols} | pred={pred}")
 
     elif mode == 'snr':
         s, trueMols = GetSampleSpectrum(COMPLEXITY, A)
@@ -159,7 +162,7 @@ def master_plot(spectralMatrix, mode='complexity', x_values=None, num_trials=5, 
     }
 
 
-    COMPLEXITY = 10
+    COMPLEXITY = 3
     if x_values is None:
         if mode == 'complexity':
             x_values = list(range(1, 25))
@@ -170,7 +173,7 @@ def master_plot(spectralMatrix, mode='complexity', x_values=None, num_trials=5, 
         elif mode == 'library_size':
             x_values = list(range(25, spectralMatrix.shape[1] + 1, 5))
         elif mode == 'known_proportion':
-            x_values = [1, 0.8, 0.6, 0.4, 0.2, 0.1]
+            x_values = [1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2]
         else:
             raise ValueError("Invalid mode")
 
@@ -178,7 +181,7 @@ def master_plot(spectralMatrix, mode='complexity', x_values=None, num_trials=5, 
     def run_dispatch(method, func, A, mode, x, COMPLEXITY):
         if method == "L0":
             if (mode == "complexity" and x > max_support) or (mode != "complexity" and COMPLEXITY > max_support):
-                print(f">>> SKIP {method} | x = {x} due to max_support")
+                #print(f">>> SKIP {method} | x = {x} due to max_support")
                 return method, x, np.nan
 
         try:
@@ -278,7 +281,7 @@ def main():
     print("starting...")
     file = "mass_spectra_individual.csv"
     A, df = LoadRealMatrix(file)
-    master_plot(A, mode='library_size', x_values=None, num_trials= 20)
+    master_plot(A, mode='known_proportion', x_values=None, num_trials= 10)
 
 
 if __name__ == "__main__":

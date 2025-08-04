@@ -14,6 +14,7 @@ from sklearn.linear_model import LassoCV
 from sklearn.metrics import r2_score
 from abess.linear import LinearRegression
 from scipy.optimize import lsq_linear
+from numpy.linalg import cond
 
 
 # importing generated data from the data generation file
@@ -42,28 +43,37 @@ from ABESS import (
 # ask how to optimize the instrument - how many wavelengths, what resolution
 
 
-
-
-from scipy.optimize import lsq_linear
-from itertools import combinations
-from joblib import Parallel, delayed
-import numpy as np
-
 # Helper for evaluating one combination
-def evaluate_combo(cols, matrix, spectra, criterion, n_obs, n_vars):
+# Modified evaluate_combo with safe guards
+def evaluate_combo(cols, matrix, spectra, criterion, n_obs, n_vars, true_support=None):
     subM = matrix[:, cols]
 
     if np.any(~np.isfinite(subM)) or np.any(~np.isfinite(spectra)):
-        print("Warning: NaN or Inf detected in inputs!")
+        return None  # invalid input
 
-    # Non-negative least squares fit
-    result = lsq_linear(subM, spectra, bounds=(0, np.inf), method='trf')
+    try:
+        result = lsq_linear(
+            subM,
+            spectra,
+            bounds=(0, np.inf),
+            method='trf',
+            tol=1e-8,
+            max_iter=1000,
+            lsmr_tol='auto'
+        )
+    except Exception:
+        return None
+
     x_hat = result.x
-    y_hat = subM @ x_hat
-    rss = np.sum((spectra - y_hat) ** 2)
+    if not np.all(np.isfinite(x_hat)):
+        return None
 
-    if rss <= 0:
-        return None  # skip degenerate fit
+    y_hat = subM @ x_hat
+    if not np.all(np.isfinite(y_hat)):
+        return None
+
+    rss = np.sum((spectra - y_hat) ** 2)
+    rss = max(rss, 1e-14)  # floor to avoid log issues
 
     k = len(cols)
 
@@ -72,43 +82,65 @@ def evaluate_combo(cols, matrix, spectra, criterion, n_obs, n_vars):
     elif criterion == 'BIC':
         score = k * np.log(n_obs) + n_obs * np.log(rss / n_obs)
     elif criterion == 'MDL':
-        score = k * np.log(n_vars) + np.log(rss + 1e-8)
+        score = k * np.log(n_vars) + np.log(rss)
     else:
         raise ValueError("Criterion must be 'AIC', 'BIC', or 'MDL'")
 
-    return (score, cols, x_hat)
+    is_true = False
+    if true_support is not None:
+        is_true = set(cols) == set(true_support)
 
-# L_Zero function with parallelized evaluation
-def L_Zero(matrix, spectra, criterion='AIC', max_support=4, n_jobs=-1):
+    return (score, cols, x_hat, rss, cond(subM), is_true)
+
+
+def L_Zero(matrix, spectra, criterion='AIC', max_support=4, n_jobs=-1, true_support=None):
     best_score = np.inf
     best_combo = None
     best_factors = None
 
     n_obs, n_vars = matrix.shape
 
+    # For later diagnostics
+    true_support_score = None
+
     for r in range(1, max_support + 1):
         combos = list(combinations(range(n_vars), r))
 
-        # Parallel evaluation
         results = Parallel(n_jobs=n_jobs)(
-            delayed(evaluate_combo)(cols, matrix, spectra, criterion, n_obs, n_vars)
+            delayed(evaluate_combo)(cols, matrix, spectra, criterion, n_obs, n_vars, true_support)
             for cols in combos
         )
 
         for res in results:
-            if res is not None:
-                score, cols, x_hat = res
-                if score < best_score:
-                    best_score = score
-                    best_combo = cols
-                    best_factors = x_hat
+            if res is None:
+                continue
+            score, cols, x_hat, rss, cond_subm, is_true = res
 
-    # Format output to match Lasso: full-length coefficient vector
+            # Capture true support score
+            if is_true:
+                true_support_score = score
+
+            # Update best
+            if score < best_score:
+                best_score = score
+                best_combo = cols
+                best_factors = x_hat
+
+    # Diagnostics printout when true support is provided
+    if true_support is not None:
+        print("=== L_Zero diagnostics ===")
+        print(f" True support: {tuple(true_support)} | score: {true_support_score}")
+        print(f" Selected support: {tuple(best_combo)} | score: {best_score}")
+        if true_support_score is not None:
+            gap = best_score - true_support_score
+            print(f" Score gap (selected - true): {gap:.6f}")
+        else:
+            print(" Warning: true support was not evaluated (possibly outside max_support).")
+
+    # Format output vector
     x_full = np.zeros(n_vars)
     if best_combo is not None:
         x_full[np.array(best_combo)] = best_factors
-
-    #print("L0 ran")
 
     return x_full
 
