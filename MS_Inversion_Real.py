@@ -211,7 +211,7 @@ def main():
     file = "mass_spectra_individual.csv"
     A, df = LoadRealMatrix(file)
 
-    Model_Test(A, 50, noise = False, score_fn=f_beta, sampleRange = 50)
+    Model_Test(A, 25, noise = True, score_fn=strict_recall_score, sampleRange = 25)
     # spectra, trueMolecules = GetSampleSpectrum(2, A)
     # print("true molecules: ", trueMolecules)
     # predictedMolecules = ABESS(A, spectra, 10)

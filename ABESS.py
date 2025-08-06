@@ -1,8 +1,8 @@
 # Author: Alex Seager
 # Last Version: 7/10/25
 #
-# Description: I am attempting to implement the ABESS algorithm from zhu et al 2020 to have control over 
-# specific implementation and debugging
+# Description: implementation of the ABESS algorithm from zhu et al 2020 
+# this file allows control over specific implementation and debugging
 
 import numpy as np
 import pandas as pd
@@ -18,20 +18,37 @@ from MS_Model_Current import (
     AddNoise
 )
 
-# import data from csv
-def LoadRealMatrix(csv_path, numMolecules=None, numWavelengths=None, normalize=False):
+# import data from csv for testing
+def LoadRealMatrix(csv_path, numMolecules=None, numWavelengths=None, normalize=True):
+    # Read the full matrix; first column is the bin index
     df_full = pd.read_csv(csv_path, index_col=0)
-    #truncate
-    df = df_full.loc[50:787]
 
-    A = df.values  # shape: (numWavelengths, numMolecules)
+    # Truncate the mz/wavelength range
+    df = df_full.loc[51:450]
 
+    # Derive “short” names by stripping off the trailing “_1”, “_2”, etc.
+    # e.g. “alanine_1” → “alanine”
+    short_names = df.columns.str.rsplit("_", n=1).str[0]
+
+    # Group columns by that short name and take the mean
+    grouped_df = df.T.groupby(short_names).mean().T
+
+    # Optional truncation of rows/columns
+    if numWavelengths is not None:
+        grouped_df = grouped_df.iloc[:numWavelengths, :]
+    if numMolecules is not None:
+        grouped_df = grouped_df.iloc[:, :numMolecules]
+
+    # Convert to numpy array
+    A = grouped_df.values
+
+    # Column‐wise normalization (if requested)
     if normalize:
         norms = np.linalg.norm(A, axis=0)
-        norms[norms == 0] = 1  # avoid division by zero
+        norms[norms == 0] = 1
         A = A / norms
 
-    return A, df
+    return A, grouped_df
 
 
 def compute_sic(y, y_pred, s, p, alpha=2):
@@ -196,8 +213,7 @@ def Splice(matrix, spectra, s, k, max_iter=100, tol=1e-6):
 
     return np.array(A_final), beta_final
 
-
-
+#for testing
 def main():
     s, molecules = GetSampleSpectrum(10, spectralMatrix)
     noisySpectra = AddNoise(10, s)

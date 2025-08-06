@@ -17,13 +17,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 import seaborn as sns
-
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder, normalize
-from sklearn.metrics import classification_report
 import matplotlib.pyplot as plt
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
-import matplotlib.colors as mcolors
 
 from MS_Inversion_Toy import (
     strict_recall_score,
@@ -37,18 +31,40 @@ from MS_Inversion_Toy import (
 # Then create artificial mixtures of size 1 to 25 (equal weight by default),
 # each labeled with a binary vector indicating which molecules are present.
 
-def load_and_prepare_data(spectra_path, metadata_path, N_Mixtures=100, max_complexity=25, seed=42, noise=True):
-    # Load and average spectra by molecule
-    X_raw = pd.read_csv(spectra_path, index_col=0).T  # shape: (samples × m/z bins)
-    meta = pd.read_csv(metadata_path).set_index("molecule").loc[X_raw.index]
+def load_and_prepare_data(
+    spectra_path,
+    metadata_path,
+    N_Mixtures=100,
+    max_complexity=25,
+    seed=42,
+    noise=True,
+    normalize_library=True
+):
+    # 1) Read in the raw matrix (rows are runs like "Alanine_1", cols are m/z bins)
+    X_raw = pd.read_csv(spectra_path, index_col=0).T  # shape: (runs × bins)
 
-    # Average replicates by molecule name
-    X_avg = X_raw.groupby(X_raw.index).mean()
-    X_avg = X_avg.sort_index()
-    molecule_names = list(X_avg.index)
-    spectral_matrix = X_avg.values.T  # shape: (num_bins, num_molecules)
+    # 2) Load metadata and align to the runs
+    meta = pd.read_csv(metadata_path).set_index("molecule")
+    meta = meta.reindex(X_raw.index)
 
-    # Generate synthetic mixtures
+    # 3) Build grouping key
+    if "short_molecule" in meta.columns:
+        grouping = meta["short_molecule"]
+    else:
+        grouping = X_raw.index.str.rsplit("_", n=1).str[0]
+
+    # 4) Average replicates for each base molecule
+    X_avg           = X_raw.groupby(grouping).mean().sort_index()
+    molecule_names  = X_avg.index.tolist()
+    spectral_matrix = X_avg.values.T   # shape: (num_bins, num_molecules)
+
+    # 5) Optionally normalize each library column to unit L2 norm
+    if normalize_library:
+        norms = np.linalg.norm(spectral_matrix, axis=0)
+        norms[norms == 0] = 1.0
+        spectral_matrix = spectral_matrix / norms
+
+    # 6) Generate synthetic mixtures
     X_mixed, Y_mixed = generate_mixture_dataset(
         spectral_matrix,
         N=N_Mixtures,
@@ -56,7 +72,8 @@ def load_and_prepare_data(spectra_path, metadata_path, N_Mixtures=100, max_compl
         max_complexity=max_complexity,
         equal_weights=True,
         seed=seed,
-        add_noise=noise
+        add_noise=noise,
+        snr=5
     )
 
     print(f" Molecules in library: {spectral_matrix.shape[1]}")
@@ -145,7 +162,6 @@ def AddNoise(snr, spectra):
     noisy[mask] = spectra[mask] * factors[mask]
     return noisy
 
-
 # -----------------------------
 # Step 3: PyTorch Dataset Class
 # -----------------------------
@@ -167,21 +183,23 @@ class SpectraClassifier(nn.Module):
     def __init__(self, input_dim, num_classes, dropout_prob=0.3):
         super().__init__()
         self.fc1 = nn.Linear(input_dim, 256)
-        self.bn1 = nn.BatchNorm1d(256)
+        self.act1 = nn.LeakyReLU()
         self.dropout1 = nn.Dropout(dropout_prob)
 
         self.fc2 = nn.Linear(256, 128)
-        self.bn2 = nn.BatchNorm1d(128)
+        self.act2 = nn.LeakyReLU()
         self.dropout2 = nn.Dropout(dropout_prob)
 
         self.out = nn.Linear(128, num_classes)
 
     def forward(self, x):
-        x = F.leaky_relu(self.bn1(self.fc1(x)))
+        x = self.act1(self.fc1(x))
         x = self.dropout1(x)
-        x = F.leaky_relu(self.bn2(self.fc2(x)))
+        x = self.act2(self.fc2(x))
         x = self.dropout2(x)
-        return self.out(x)
+        return self.out(x)  # logits
+
+
     
 #bigger model
 class BiggerClassifier(nn.Module):
@@ -216,50 +234,34 @@ class SparseLinearClassifier(nn.Module):
 # -----------------------------
 # Step 4.5: Loss helper functions
 # -----------------------------
-def strict_recall_loss(y_pred, y_true, precision_threshold=0.95, alpha=5.0, eps=1e-6):
-    """
-    Soft version of strict recall penalty.
-    Penalizes predictions if precision is below the threshold.
-    """
-    TP = torch.sum(y_true * y_pred, dim=1)
-    FP = torch.sum((1 - y_true) * y_pred, dim=1)
-    FN = torch.sum(y_true * (1 - y_pred), dim=1)
 
-    precision = TP / (TP + FP + eps)
-    recall    = TP / (TP + FN + eps)
+import torch.nn as nn
+import torch.nn.functional as F
 
-    # Add penalty when precision < threshold
-    penalty = torch.where(
-        precision < precision_threshold,
-        alpha * (precision_threshold - precision),
-        torch.zeros_like(precision)
-    )
+def recon_class_loss(
+    logits,       # [B x M]
+    y_true,       # [B x M]
+    s_true,       # [B x N_bins]
+    A_T,          # [M x N_bins] library matrix transposed
+    pos_weight,   # [M] tensor of positive-class weights
+    alpha=1.0,
+    beta=0.01
+):
+    # 1) classification with positive‐class weighting
+    bce_fn = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
+    bce    = bce_fn(logits, y_true)
 
-    return (1 - recall + penalty).mean()
+    # 2) get probabilities
+    p      = torch.sigmoid(logits)               # [B x M]
 
-def hybrid_loss_with_L1(y_pred, y_true,
-                        lambda_weight=1.0,
-                        l1_weight=0.01):
-    """
-    Hybrid loss using:
-    - Binary Cross-Entropy
-    - Strict recall penalty (penalizes low precision)
-    - L1 penalty to promote sparse outputs
-    """
+    # 3) reconstruction MSE
+    s_hat  = p @ A_T                             # [B x N_bins]
+    mse    = F.mse_loss(s_hat, s_true)
 
-    # Binary cross-entropy
-    bce = F.binary_cross_entropy(y_pred, y_true)
+    # 4) sparsity penalty
+    l1     = p.abs().sum(dim=1).mean()           # mean ℓ₁ per sample
 
-    # Strict recall penalty
-    strict = strict_recall_loss(y_pred, y_true)
-
-    # L1 norm of predicted probabilities
-    l1 = torch.sum(y_pred, dim=1).mean()
-
-    return bce + lambda_weight * strict + l1_weight * l1
-
-
-
+    return bce + alpha * mse + beta * l1
 
 # -----------------------------
 # Step 5: Training Function
@@ -282,16 +284,42 @@ def train_model(model, dataloader, loss_fn, optimizer, device, epochs=100):
 
         print(f"Epoch {epoch+1}/{epochs}, Loss: {total_loss:.4f}")
 
+def train_with_recon(model, dataloader, optimizer, device,
+                     A_T, pos_weight, alpha=1.0, beta=0.01, epochs=100):
+    model.train()
+    for epoch in range(epochs):
+        total_loss = 0.0
+        for s_batch, y_batch in dataloader:
+            # s_batch: [B x N_bins], y_batch: [B x M]
+            s_batch = s_batch.to(device)
+            y_batch = y_batch.to(device)
 
+            optimizer.zero_grad()
+            logits = model(s_batch)   # [B x M]
+            loss   = recon_class_loss(
+                logits,
+                y_batch,
+                s_batch,
+                A_T,
+                pos_weight=pos_weight,
+                alpha=alpha,
+                beta=beta
+            )
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 5.0)
+            optimizer.step()
+
+            total_loss += loss.item()
+
+        print(f"Epoch {epoch+1}/{epochs} — Loss: {total_loss:.4f}")
 # -----------------------------
 # Step 6: Evaluation Function
 # -----------------------------
 def evaluate_model_with_noise_levels(model, spectral_matrix, molecule_names, device,
                                      snr_values=[3, 5, 8], max_complexity=25, N_per_complexity=20,
-                                     threshold=0.5, score_fn=None,
+                                     threshold=0.8, score_fn=None,
                                      noise=True):
     if score_fn is None:
-        # use imported f_beta with beta=1
         score_fn = lambda true_idxs, pred_idxs: f_beta(true_idxs, pred_idxs, beta=1)
 
     snr_colors = {3: 'C0', 5: 'C1', 8: 'C2', None: 'black'}
@@ -306,7 +334,7 @@ def evaluate_model_with_noise_levels(model, spectral_matrix, molecule_names, dev
         label = f"SNR = {snr}" if noise else "No Noise"
         print(f"\n--- Evaluating at SNR = {snr if noise else 'None'} ---")
         for complexity in range(1, max_complexity + 1):
-            # Generate test set with or without noise
+            # generate test mixtures
             X_eval, Y_eval = generate_mixture_dataset(
                 spectral_matrix,
                 N=N_per_complexity,
@@ -315,30 +343,35 @@ def evaluate_model_with_noise_levels(model, spectral_matrix, molecule_names, dev
                 equal_weights=True,
                 snr=snr,
                 add_noise=noise,
-                seed=(snr if noise else 0) * 100 + complexity  # unique seed
+                seed=(snr if noise else 0)*100 + complexity
             )
 
             model.eval()
             with torch.no_grad():
-                inputs = torch.tensor(X_eval, dtype=torch.float32).to(device)
-                outputs = torch.sigmoid(model(inputs)).cpu().numpy()
-                preds = (outputs >= threshold).astype(int)
+                inputs  = torch.tensor(X_eval, dtype=torch.float32).to(device)
+                logits  = model(inputs)
+                probs   = torch.sigmoid(logits).cpu().numpy()
+                preds   = (probs >= threshold).astype(int)
 
-            # Score each sample
+            # Score all samples
             for i in range(len(Y_eval)):
                 true_idxs = np.where(Y_eval[i] == 1)[0]
-                pred_idxs = np.where(preds[i] == 1)[0]
-                score = score_fn(true_idxs, pred_idxs)
-                x_jittered = complexity + offsets.get(snr, 0.0) + np.random.uniform(-jitter_amp, jitter_amp)
-                results.append((snr, x_jittered, score))
+                pred_idxs = np.where(preds[i]   == 1)[0]
+                score     = score_fn(true_idxs, pred_idxs)
+                x_jit     = complexity + offsets.get(snr,0) + np.random.uniform(-jitter_amp, jitter_amp)
+                results.append((snr, x_jit, score))
 
-            # Print example
+            # Print one example *with probabilities*
             i = 0
-            true_names = [molecule_names[j] for j in np.where(Y_eval[i] == 1)[0]]
-            pred_names = [molecule_names[j] for j in np.where(preds[i] == 1)[0]]
+            true_idxs = np.where(Y_eval[i] == 1)[0]
+            pred_idxs = np.where(preds[i]   == 1)[0]
+            true_names = [molecule_names[j] for j in true_idxs]
             print(f"\nComplexity {complexity} | {'No Noise' if not noise else f'SNR {snr}'}")
             print(f" True: {true_names}")
-            print(f" Pred: {pred_names}")
+            print(" Predicted (name: probability):")
+            for j in pred_idxs:
+                print(f"  • {molecule_names[j]}: {probs[i][j]:.6f}")
+
 
     # --- Plot ---
     if noise:
@@ -365,15 +398,15 @@ def evaluate_model_with_noise_levels(model, spectral_matrix, molecule_names, dev
     ax.set_ylabel("F₁ Score" if score_fn.__name__ == "<lambda>" else "Score")
     ax.set_title("Model Performance vs. Mixture Complexity" + (" (Noisy)" if noise else " (Clean)"))
     ax.set_xlim(0.5, max_complexity + 0.5)
-    ax.set_ylim(-0.05, 1.05)
+    ax.set_ylim(-1.05, 1.05)
     ax.legend(title='Noise Level' if noise else 'Evaluation')
     ax.grid(True, linestyle='--', alpha=0.4)
     plt.tight_layout()
-    plt.savefig("NN_Test_NoiseLevels.png", dpi=300)
+    plt.savefig("NN_Test_Noise_Levels.png", dpi=300)
     plt.show()
 
 
-def evaluate_on_fixed_test_set(model, X_test, Y_test, molecule_names, device, threshold=0.5):
+def evaluate_on_fixed_test_set(model, X_test, Y_test, molecule_names, device, threshold=0.01):
     model.eval()
     with torch.no_grad():
         inputs = torch.tensor(X_test, dtype=torch.float32).to(device)
@@ -417,56 +450,6 @@ def evaluate_on_fixed_test_set(model, X_test, Y_test, molecule_names, device, th
 # -----------------------------
 # Main Execution Block
 # -----------------------------
-def train_model_with_curriculum(model, spectral_matrix, loss_fn, optimizer, device,
-                                molecule_names, epochs=100, batch_size=256,
-                                snr_schedule=[None, 8, 5, 3], mixtures_per_epoch=1000,
-                                smoothing_epsilon=0.05):
-
-    from torch.utils.data import DataLoader
-
-    model.train()
-    num_classes = spectral_matrix.shape[1]
-
-    for epoch in range(epochs):
-        # Choose noise level based on schedule
-        snr = snr_schedule[min(epoch // (epochs // len(snr_schedule)), len(snr_schedule) - 1)]
-        print(f"\n🌀 Epoch {epoch+1}/{epochs} | SNR = {snr}")
-
-        # Generate noisy mixtures on-the-fly
-        X_train, Y_train = generate_mixture_dataset(
-            spectral_matrix,
-            N=mixtures_per_epoch,
-            min_complexity=1,
-            max_complexity=50,
-            snr=snr,
-            add_noise=True,
-            seed=epoch + 42
-        )
-
-        # Apply label smoothing
-        Y_train = Y_train * (1 - smoothing_epsilon) + 0.5 * smoothing_epsilon
-
-        # Prepare dataloader
-        train_ds = SpectraDataset(X_train, Y_train)
-        train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=0)
-
-        total_loss = 0.0
-        for X_batch, y_batch in train_loader:
-            X_batch, y_batch = X_batch.to(device), y_batch.to(device)
-
-            optimizer.zero_grad()
-            logits = model(X_batch)
-            loss = loss_fn(logits, y_batch)
-            loss.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=5.0)
-            optimizer.step()
-
-            total_loss += loss.item()
-
-        print(f"Loss: {total_loss:.4f}")
-
-
-
 
 def main():
     spectra_file = "mass_spectra_individual.csv"
@@ -486,7 +469,6 @@ def main():
         noise = True
     )
 
-
     # === Test Data (new seed) ===
     X_test, Y_test = generate_mixture_dataset(
         spectral_matrix,
@@ -497,22 +479,27 @@ def main():
         seed=1337  # different from training
     )
 
-
     # === Dataloader Setup ===
     train_ds = SpectraDataset(X_train, Y_train)
-    train_loader = DataLoader(train_ds, batch_size=128, shuffle=True)
+    train_loader = DataLoader(train_ds, batch_size=256, shuffle=True)
 
    # === Model Setup ===
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = SparseLinearClassifier(input_dim=X_train.shape[1], num_classes=Y_train.shape[1]).to(device)
+    model = SpectraClassifier(input_dim=X_train.shape[1], num_classes=Y_train.shape[1]).to(device)
+    
+    #trying new optimizer
+    #optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-4)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
     # === Loss function: BCEWithLogitsLoss + pos_weight to handle class imbalance ===
-    label_freq = Y_train.mean(axis=0)  # fraction of samples each label appears in
-    pos_weight = (1.0 / (label_freq + 1e-6)).clip(max=20.0)  # avoid huge weights
-    pos_weight = torch.tensor(pos_weight, dtype=torch.float32).to(device)
+    # label_freq = Y_train.mean(axis=0)  # fraction positive per molecule
+    # pos_weight_vec = torch.tensor(
+    #     np.minimum(1.0 / (label_freq + 1e-6), 20.0),
+    #     dtype=torch.float32
+    # ).to(device)  # cap to avoid extreme scaling
 
-    loss_fn = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
+    # loss_fn = nn.BCEWithLogitsLoss(pos_weight=pos_weight_vec)
+
 
     # define loss fn here
     # 
@@ -520,33 +507,57 @@ def main():
     # pos_weight = 1.0 / (label_freq + 1e-6)  # avoid div-by-zero
     # pos_weight = torch.tensor(pos_weight).float().clamp(max=20.0).to(device)
 
-#     loss_fn = lambda logits, y: hybrid_loss_with_L1(
-#         torch.sigmoid(logits), y,
-#         lambda_weight=0,
-#         l1_weight=0.01
-# )
-    # loss_fn = lambda logits, y_true: F.binary_cross_entropy(torch.sigmoid(logits), y_true)
+    # loss_fn = lambda logits, y: hybrid_loss_with_L1(
+    #     torch.sigmoid(logits), y,
+    #     lambda_weight=0,
+    #     l1_weight=0.000001
+    # )
 
     # === Training ===
-    print("Starting training...")
-    train_model(model, train_loader, loss_fn, optimizer, device, epochs=100) 
-    # train_model_with_curriculum(
-    #     model=model,
-    #     spectral_matrix=spectral_matrix,
-    #     loss_fn=loss_fn,
-    #     optimizer=optimizer,
-    #     device=device,
-    #     molecule_names=molecule_names,
-    #     epochs=100,
-    #     batch_size=256,
-    #     snr_schedule=[None, 8, 5, 3],   # Gradually add noise
-    #     mixtures_per_epoch=1000,
-    #     smoothing_epsilon=0.05
-    # )
+    # print("Starting training...")
+    # train_model(model, train_loader, loss_fn, optimizer, device, epochs=20) 
+    # build A_T for reconstruction
+    A_T = torch.tensor(
+        spectral_matrix.T,
+        dtype=torch.float32,
+        device=device
+    )
+
+    # compute pos_weight vector exactly as before
+    label_freq    = Y_train.mean(axis=0)  # [M]
+    pos_weight_np = np.minimum(1.0 / (label_freq + 1e-6), 20.0)
+    pos_weight_vec= torch.tensor(
+        pos_weight_np,
+        dtype=torch.float32,
+        device=device
+    )
+
+    # now train with the reconstruction‐regularized loss
+    print("Starting training with reconstruction loss…")
+    train_with_recon(
+        model,
+        train_loader,
+        optimizer,
+        device,
+        A_T,
+        pos_weight=pos_weight_vec,
+        alpha=10.0,
+        beta=0.01,
+        epochs=100
+    )
+
+    # after training completes
+    save_path = "spectra_classifier_recon.pth"
+    torch.save({
+        "model_state": model.state_dict(),
+        "optimizer_state": optimizer.state_dict(),
+        "molecule_names": molecule_names,
+    }, save_path)
+    print(f"✅ Saved checkpoint to {save_path}")
 
     # === Evaluation ===
     #evaluate_on_fixed_test_set(model, X_test, Y_test, molecule_names, device=device)
-    evaluate_model_with_noise_levels(model, spectral_matrix=spectral_matrix, molecule_names=molecule_names, device=device, max_complexity=25, noise = False)
+    evaluate_model_with_noise_levels(model, spectral_matrix=spectral_matrix, molecule_names=molecule_names, device=device, max_complexity=25, noise = True)
 
 if __name__ == "__main__":
     main()

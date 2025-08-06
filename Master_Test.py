@@ -6,7 +6,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.linear_model import Lasso
-from scipy.optimize import lsq_linear
 from itertools import combinations
 from joblib import Parallel, delayed
 import pandas as pd
@@ -26,35 +25,45 @@ from ABESS import (
     ABESS
 )
 
-MAX_SUPPORT_L0 = 3 # Define your L0 support here
+# this is the biggest size of combinations the L0 method will try
+# if running locally size 2 or 3 is the maximum but higher is possible
+# on a server with more compute
+MAX_SUPPORT_L0 = 3 
 
 # Import and process spectral matrix, averaging duplicate molecule columns
 def LoadRealMatrix(csv_path, numMolecules=None, numWavelengths=None, normalize=True):
+    # Read the full matrix; first column is the bin index
     df_full = pd.read_csv(csv_path, index_col=0)
 
-    # Truncate wavelength range
+    # Truncate the mz/wavelength range
     df = df_full.loc[51:450]
 
-    # Average duplicate molecule columns (by name), using updated groupby syntax
-    grouped_df = df.T.groupby(df.columns).mean().T
+    # Derive “short” names by stripping off the trailing “_1”, “_2”, etc.
+    # e.g. “alanine_1” → “alanine”
+    short_names = df.columns.str.rsplit("_", n=1).str[0]
 
-    # Optional truncation
+    # Group columns by that short name and take the mean
+    grouped_df = df.T.groupby(short_names).mean().T
+
+    # Optional truncation of rows/columns
     if numWavelengths is not None:
         grouped_df = grouped_df.iloc[:numWavelengths, :]
     if numMolecules is not None:
         grouped_df = grouped_df.iloc[:, :numMolecules]
 
-    # Convert to matrix
+    # Convert to numpy array
     A = grouped_df.values
 
+    # Column‐wise normalization (if requested)
     if normalize:
         norms = np.linalg.norm(A, axis=0)
         norms[norms == 0] = 1
         A = A / norms
 
-    #print("Molecules used:", list(grouped_df.columns))
     return A, grouped_df
 
+
+# Define wrappers for each model to account for individual settings
 def safe_ABESS(A, b, threshold=1e-4, sMax=25):
     result = ABESS(A, b, sMax=5, exhaustive_k=True)  # for small lib
     
@@ -73,19 +82,9 @@ def safe_Lasso(A, b, threshold=1e-4, alpha=1e-5):
     x_hat = Lasso_L1(A, b, alpha=alpha)
     return [i for i, coef in enumerate(x_hat) if abs(coef) > threshold]
 
-
-def run_abess_trial(spectralMatrix, mode, x, COMPLEXITY):
-    return run_single_trial(safe_ABESS, spectralMatrix, mode, x, COMPLEXITY, method_name="ABESS")
-
-def run_l0_trial(spectralMatrix, mode, x, COMPLEXITY):
-    return run_single_trial(safe_L0, spectralMatrix, mode, x, COMPLEXITY, method_name="L0")
-
-def run_lasso_trial(spectralMatrix, mode, x, COMPLEXITY):
-    return run_single_trial(safe_Lasso, spectralMatrix, mode, x, COMPLEXITY, method_name="Lasso")
-
-
+# Generate a mixture based on the mode and complexity and run the inverse fit with the given method
 def run_single_trial(func, A, mode, x, COMPLEXITY, method_name="Unknown"):
-    # print(f"{method_name} ran") 
+    print(f"{method_name} ran") 
 
     if mode == 'complexity':
         s, trueMols = GetSampleSpectrum(x, A)
@@ -145,13 +144,9 @@ def run_single_trial(func, A, mode, x, COMPLEXITY, method_name="Unknown"):
         pred = [known_indices[i] for i in pred]
         trueMols = true_known.tolist()  # only evaluate known ones
 
-
+    # All we return is the f-score of the models guess
     return f_beta(trueMols, pred)
 
-
-from joblib import Parallel, delayed
-import numpy as np
-import matplotlib.pyplot as plt
 
 def master_plot(spectralMatrix, mode='complexity', x_values=None, num_trials=5, max_support = MAX_SUPPORT_L0):
 
@@ -161,8 +156,10 @@ def master_plot(spectralMatrix, mode='complexity', x_values=None, num_trials=5, 
         "ABESS": safe_ABESS
     }
 
+    # CHANGE COMPLEXITY HERE for methods other than complexity
+    COMPLEXITY = 5
 
-    COMPLEXITY = 3
+    # define values for each mode
     if x_values is None:
         if mode == 'complexity':
             x_values = list(range(1, 25))
@@ -177,6 +174,8 @@ def master_plot(spectralMatrix, mode='complexity', x_values=None, num_trials=5, 
         else:
             raise ValueError("Invalid mode")
 
+
+    # paralellization for efficient computing
     # === 1. Dispatcher ===
     def run_dispatch(method, func, A, mode, x, COMPLEXITY):
         if method == "L0":
@@ -273,16 +272,14 @@ def master_plot(spectralMatrix, mode='complexity', x_values=None, num_trials=5, 
         plt.gca().invert_xaxis()
 
     plt.tight_layout()
-    plt.savefig("Models_test.png", dpi=300)
-    #plt.show()
-
+    plt.savefig("Models_test.png", dpi=300) #use this if running on server
+    #plt.show() #use this if running locally
 
 def main():
     print("starting...")
     file = "mass_spectra_individual.csv"
     A, df = LoadRealMatrix(file)
-    master_plot(A, mode='known_proportion', x_values=None, num_trials= 10)
-
+    master_plot(A, mode='known_proportion', x_values=None, num_trials= 1)
 
 if __name__ == "__main__":
     main()

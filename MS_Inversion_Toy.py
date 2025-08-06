@@ -342,7 +342,7 @@ def Model_Test(spectralMatrix, a, noise=True, score_fn=f_beta, sampleRange = 20)
 
         noisySpectra = AddNoise(snr, s) if noise else s
         #Change model here
-        x_sol = ABESS(spectralMatrix, noisySpectra, sMax = 50) #, 50, exhaustive_k = True)
+        x_sol = ABESS(spectralMatrix, noisySpectra, sMax = 25, exhaustive_k = True)
 
         #change required concentration here
         gamma = 0.001
@@ -416,9 +416,6 @@ def Model_Test(spectralMatrix, a, noise=True, score_fn=f_beta, sampleRange = 20)
 
     plt.tight_layout()
     plt.savefig("Test.png", dpi=300)
-
-
-
 
 
 def main():

@@ -1,122 +1,111 @@
 molecule,group,file,short_molecule
-1234tetfbenz,Misc,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Misc/1234tetfbenz_250C_070725.txt,1234tetfbenz
-nred,Misc,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Misc/nred_250C_070725.txt,nred
-cyclopen,Misc,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Misc/cyclopen_250C_070725.txt,cyclopen
-mcyclopen,Misc,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Misc/mcyclopen_250C_070725.txt,mcyclopen
-pyr,Misc,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Misc/pyr_250C_070725.txt,pyr
-246Trimpyr,Misc,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Misc/246Trimpyr_250C_070725.txt,246Trimpyr
-nmpyrr,Misc,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Misc/nmpyrr_250C_070725.txt,nmpyrr
-Asn,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Asn_250C_070325.txt,Asn
-Arg,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Arg_250C_070325.txt,Arg
-Ala,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Ala_250C_070325.txt,Ala
-Glu,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Glu_250C_070325.txt,Glu
-Leu,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Leu_250C_070325.txt,Leu
-Phe,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Phe_250C_070325.txt,Phe
-Cys,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Cys_250C_070325.txt,Cys
-Ser,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Ser_250C_070325.txt,Ser
-ile,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/ile_250C_070325.txt,ile
-Gln,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Gln_250C_070325.txt,Gln
-Met,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Met_250C_070325.txt,Met
-Trp,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Trp_250C_070325.txt,Trp
-Asp,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Asp_250C_070325.txt,Asp
-Val,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Val_250C_070325.txt,Val
-Gly,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Gly_250C_070325.txt,Gly
-Pro,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Pro_250C_070325.txt,Pro
-Tyr,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Tyr_250C_070325.txt,Tyr
-Lys,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Lys_250C_070325.txt,Lys
-Thr,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Thr_250C_070325.txt,Thr
-2-aminoisobutyric acid,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/2-aminoisobutyric acid_250C_071125.txt,2-aminoisobutyric acid
-Benzene,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/Benzene_250C_070725.txt,Benzene
-Coronene,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/Coronene_250C_071125.txt,Coronene
-Phenanth,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/Phenanth_250C_070925.txt,Phenanth
-napth,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/napth_250C_071125.txt,napth
-26napdisulfonacidsalt,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/26napdisulfonacidsalt_250C_071125.txt,26napdisulfonacidsalt
-Pyrene,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/Pyrene_250C_070725.txt,Pyrene
-Anthracene,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/Anthracene_250C_071125.txt,Anthracene
-benzsulfa,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/benzsulfa_250C_070725.txt,benzsulfa
-P2,Porphyrns,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Porphyrns/P2_250C_070325.txt,P2
-ZnPh,Porphyrns,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Porphyrns/ZnPh_250C_070325.txt,ZnPh
-P1,Porphyrns,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Porphyrns/P1_250C_070325.txt,P1
-Lumichr,Flavins,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Flavins/Lumichr_250C_071125.txt,Lumichr
-6methura,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/6methura_250C_071125.txt,6methura
-Purine,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/Purine_250C_070925.txt,Purine
-2methoxnap,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/2methoxnap_250C_070925.txt,2methoxnap
-1methura,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/1methura_250C_071125.txt,1methura
-Xanth,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/Xanth_250C_070925.txt,Xanth
-Adenine,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/Adenine_061125.txt,Adenine
-Cytosine,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/Cytosine_061125.txt,Cytosine
-Guanine,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/Guanine_061125.txt,Guanine
-1m3mbenz,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/1m3mbenz_250C_070725.txt,1m3mbenz
-Pyrimidine,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/Pyrimidine_250C_070925.txt,Pyrimidine
-26diampur,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/26diampur_250C_070925.txt,26diampur
-hypxanth,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/hypxanth_250C_070925.txt,hypxanth
-1c3moxybenz,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/1c3moxybenz_250C_070725.txt,1c3moxybenz
-Biphenyl,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/Biphenyl_250C_070925.txt,Biphenyl
-6methcyt,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/6methcyt_250C_071125.txt,6methcyt
-213Benz,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/213Benz_250C_070925.txt,213Benz
-22bipyr,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/22bipyr_250C_070925.txt,22bipyr
-dodecyla,Lipids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Lipids/dodecyla_250C_070725.txt,dodecyla
-undeca,Lipids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Lipids/undeca_250C_071125.txt,undeca
-nandecsulf,Lipids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Lipids/nandecsulf_250C_070925.txt,nandecsulf
-nanoctasulf,Lipids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Lipids/nanoctasulf_250C_070925.txt,nanoctasulf
-tridodeca,Lipids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Lipids/tridodeca_250C_070725.txt,tridodeca
-dodecymebr,Lipids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Lipids/dodecymebr_250C_070725.txt,dodecymebr
-dodeca,Lipids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Lipids/dodeca_250C_070725.txt,dodeca
-trimethoctammbrom,Lipids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Lipids/trimethoctammbrom_250C_070925.txt,trimethoctammbrom
-decyltriambr,Lipids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Lipids/decyltriambr_250C_070725.txt,decyltriambr
-d-gluc,Polydienes,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Polydienes/d-gluc_250C_071125.txt,d-gluc
-2deoxyrib,Polydienes,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Polydienes/2deoxyrib_250C_071125.txt,2deoxyrib
-d-rib,Polydienes,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Polydienes/d-rib_250C_071125.txt,d-rib
-16diph135hex,Polydienes,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Polydienes/16diph135hex_250C_070725.txt,16diph135hex
-Histidine,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/His/Histidine_250C_071925_Try2.txt,Histidine
-Histidine,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/His/Histidine_250C_071925_Try3.txt,Histidine
-Histidine,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/His/Histidine_250C_071925_Try1.txt,Histidine
-Histidine,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/His/Histidine_250C_071925_Try4.txt,Histidine
-Histidine,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/His/Histidine_250C_071925_Try5.txt,Histidine
-Histidine,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/His/Histidine_250C_070325.txt,Histidine
-Phenylalanine,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/phe/Phenylalanine_250C_071925_Try2.txt,Phenylalanine
-Phenylalanine,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/phe/Phenylalanine_250C_071925_Try3.txt,Phenylalanine
-Phenylalanine,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/phe/Phenylalanine_250C_071925_Try1.txt,Phenylalanine
-Phenylalanine,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/phe/Phenylalanine_250C_071925_Try4.txt,Phenylalanine
-Phenylalanine,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/phe/Phenylalanine_250C_071925_Try5.txt,Phenylalanine
-1-Naphthalenesulfonic,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/1anthsulfonacidnasalt/1-Naphthalenesulfonic_acid sodium_salt_250C_071925_Try4.txt,1-Naphthalenesulfonic
-1-Naphthalenesulfonic,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/1anthsulfonacidnasalt/1-Naphthalenesulfonic_acid sodium_salt_250C_071925_Try5.txt,1-Naphthalenesulfonic
-1-Naphthalenesulfonic,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/1anthsulfonacidnasalt/1-Naphthalenesulfonic_acid sodium_salt_250C_071925_Try2.txt,1-Naphthalenesulfonic
-1-Naphthalenesulfonic,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/1anthsulfonacidnasalt/1-Naphthalenesulfonic_acid sodium_salt_250C_071925_Try3.txt,1-Naphthalenesulfonic
-1-Naphthalenesulfonic,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/1anthsulfonacidnasalt/1-Naphthalenesulfonic_acid sodium_salt_250C_071925_Try1.txt,1-Naphthalenesulfonic
-1-naphthalenesulfonic acid,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/1napsulfonacid/1-naphthalenesulfonic acid_250C_071125.txt,1-naphthalenesulfonic acid
-1-naphthalenesulfonic acid,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/1napsulfonacid/1-naphthalenesulfonic acid_250C_071925_Try1.txt,1-naphthalenesulfonic acid
-1-naphthalenesulfonic acid,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/1napsulfonacid/1-naphthalenesulfonic acid_250C_071925_Try3.txt,1-naphthalenesulfonic acid
-1-naphthalenesulfonic acid,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/1napsulfonacid/1-naphthalenesulfonic acid_250C_071925_Try2.txt,1-naphthalenesulfonic acid
-1-naphthalenesulfonic acid,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/1napsulfonacid/1-naphthalenesulfonic acid_250C_071925_Try6.txt,1-naphthalenesulfonic acid
-1-naphthalenesulfonic acid,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/1napsulfonacid/1-naphthalenesulfonic acid_250C_071925_Try7.txt,1-naphthalenesulfonic acid
-1-naphthalenesulfonic acid,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/1napsulfonacid/1-naphthalenesulfonic acid_250C_071925_Try5.txt,1-naphthalenesulfonic acid
-1-naphthalenesulfonic acid,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/1napsulfonacid/1-naphthalenesulfonic acid_250C_071925_Try4.txt,1-naphthalenesulfonic acid
-1-naphthalenesulfonic acid,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/1napsulfonacid/1-naphthalenesulfonic acid_250C_071925_Try9.txt,1-naphthalenesulfonic acid
-1-naphthalenesulfonic acid,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/1napsulfonacid/1-naphthalenesulfonic acid_250C_071925_Try8.txt,1-naphthalenesulfonic acid
-1-naphthalenesulfonic acid,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/1napsulfonacid/1-naphthalenesulfonic acid_250C_071925_Try10.txt,1-naphthalenesulfonic acid
-3-phenanthrenesulfonic,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/3phenanthsulfonacid/3-phenanthrenesulfonic_acid potassium salt_250C_071925_Try5.txt,3-phenanthrenesulfonic
-3-phenanthrenesulfonic,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/3phenanthsulfonacid/3-phenanthrenesulfonic_acid potassium salt_250C_071925_Try4.txt,3-phenanthrenesulfonic
-3-phenanthrenesulfonic,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/3phenanthsulfonacid/3-phenanthrenesulfonic_acid potassium salt_250C_071925_Try1.txt,3-phenanthrenesulfonic
-3-phenanthrenesulfonic,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/3phenanthsulfonacid/3-phenanthrenesulfonic_acid potassium salt_250C_071925_Try3.txt,3-phenanthrenesulfonic
-3-phenanthrenesulfonic,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/3phenanthsulfonacid/3-phenanthrenesulfonic_acid potassium salt_250C_071925_Try2.txt,3-phenanthrenesulfonic
-2-naphthalenesulfonic,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/2napsulfonacid/2-naphthalenesulfonic_acid_250C_071925_Try9.txt,2-naphthalenesulfonic
-2-naphthalenesulfonic,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/2napsulfonacid/2-naphthalenesulfonic_acid_250C_071925_Try8.txt,2-naphthalenesulfonic
-2-naphthalenesulfonic,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/2napsulfonacid/2-naphthalenesulfonic_acid_250C_071925_Try11.txt,2-naphthalenesulfonic
-2-naphthalenesulfonic,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/2napsulfonacid/2-naphthalenesulfonic_acid_250C_071925_Try10.txt,2-naphthalenesulfonic
-2-naphthalenesulfonic,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/2napsulfonacid/2-naphthalenesulfonic_acid_250C_071925_Try1.txt,2-naphthalenesulfonic
-2-naphthalenesulfonic,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/2napsulfonacid/2-naphthalenesulfonic_acid_250C_071925_Try3.txt,2-naphthalenesulfonic
-2-naphthalenesulfonic,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/2napsulfonacid/2-naphthalenesulfonic_acid_250C_071925_Try2.txt,2-naphthalenesulfonic
-2-naphthalenesulfonic,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/2napsulfonacid/2-naphthalenesulfonic_acid_250C_071925_Try6.txt,2-naphthalenesulfonic
-2-naphthalenesulfonic,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/2napsulfonacid/2-naphthalenesulfonic_acid_250C_071925_Try7.txt,2-naphthalenesulfonic
-2-naphthalenesulfonic,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/2napsulfonacid/2-naphthalenesulfonic_acid_250C_071925_Try5.txt,2-naphthalenesulfonic
-2-naphthalenesulfonic,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/2napsulfonacid/2-naphthalenesulfonic_acid_250C_071925_Try4.txt,2-naphthalenesulfonic
-Thymine,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/Thymine/Thymine_250C_071925_Try3.txt,Thymine
-Thymine,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/Thymine/Thymine_061125.txt,Thymine
-Thymine,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/Thymine/Thymine_250C_071925_Try2.txt,Thymine
-Thymine,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/Thymine/Thymine_250C_071925_Try1.txt,Thymine
-Sulfur,Inorganic,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Inorganic/Sulfur/Sulfur_250C_071725_Try5.txt,Sulfur
-Sulfur,Inorganic,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Inorganic/Sulfur/Sulfur_250C_071725_Try4.txt,Sulfur
-Sulfur,Inorganic,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Inorganic/Sulfur/Sulfur_250C_071725_Try1.txt,Sulfur
-Sulfur,Inorganic,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Inorganic/Sulfur/Sulfur_250C_071725_Try3.txt,Sulfur
-Sulfur,Inorganic,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Inorganic/Sulfur/Sulfur_250C_071725_Try2.txt,Sulfur
+1234tetfbenz_1,Misc,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Misc/1234tetfbenz_250C_070725.txt,1234tetfbenz
+nred_1,Misc,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Misc/nred_250C_070725.txt,nred
+mcyclopen_1,Misc,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Misc/mcyclopen_250C_070725.txt,mcyclopen
+pyr_1,Misc,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Misc/pyr_250C_070725.txt,pyr
+246Trimpyr_1,Misc,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Misc/246Trimpyr_250C_070725.txt,246Trimpyr
+nmpyrr_1,Misc,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Misc/nmpyrr_250C_070725.txt,nmpyrr
+Asn_1,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Asn_250C_070325.txt,Asn
+Ala_1,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Ala_250C_070325.txt,Ala
+Glu_1,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Glu_250C_070325.txt,Glu
+Leu_1,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Leu_250C_070325.txt,Leu
+Phe_1,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Phe_250C_070325.txt,Phe
+Ser_1,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Ser_250C_070325.txt,Ser
+Ile_1,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Ile_250C_070325.txt,Ile
+Met_1,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Met_250C_070325.txt,Met
+Trp_1,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Trp_250C_070325.txt,Trp
+Asp_1,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Asp_250C_070325.txt,Asp
+Val_1,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Val_250C_070325.txt,Val
+Gly_1,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Gly_250C_070325.txt,Gly
+Pro_1,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Pro_250C_070325.txt,Pro
+Lys_1,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Lys_250C_070325.txt,Lys
+Thr_1,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/Thr_250C_070325.txt,Thr
+2-aminoisobutyric acid_1,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/2-aminoisobutyric acid_250C_071125.txt,2-aminoisobutyric acid
+Benzene_1,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/Benzene_250C_070725.txt,Benzene
+Coronene_1,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/Coronene_250C_071125.txt,Coronene
+Phenanth_1,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/Phenanth_250C_070925.txt,Phenanth
+napth_1,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/napth_250C_071125.txt,napth
+26napdisulfonacidsalt_1,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/26napdisulfonacidsalt_250C_071125.txt,26napdisulfonacidsalt
+Pyrene_1,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/Pyrene_250C_070725.txt,Pyrene
+Anthracene_1,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/Anthracene_250C_071125.txt,Anthracene
+benzsulfa_1,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/benzsulfa_250C_070725.txt,benzsulfa
+ZnPh_1,Porphyrns,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Porphyrns/ZnPh_250C_070325.txt,ZnPh
+Lumichr_1,Flavins,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Flavins/Lumichr_250C_071125.txt,Lumichr
+6methura_1,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/6methura_250C_071125.txt,6methura
+Purine_1,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/Purine_250C_070925.txt,Purine
+2methoxnap_1,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/2methoxnap_250C_070925.txt,2methoxnap
+1methura_1,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/1methura_250C_071125.txt,1methura
+Xanth_1,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/Xanth_250C_070925.txt,Xanth
+Adenine_1,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/Adenine_061125.txt,Adenine
+Cytosine_1,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/Cytosine_061125.txt,Cytosine
+1m3mbenz_1,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/1m3mbenz_250C_070725.txt,1m3mbenz
+Pyrimidine_1,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/Pyrimidine_250C_070925.txt,Pyrimidine
+26diampur_1,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/26diampur_250C_070925.txt,26diampur
+hypxanth_1,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/hypxanth_250C_070925.txt,hypxanth
+1c3moxybenz_1,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/1c3moxybenz_250C_070725.txt,1c3moxybenz
+Biphenyl_1,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/Biphenyl_250C_070925.txt,Biphenyl
+6methcyt_1,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/6methcyt_250C_071125.txt,6methcyt
+213Benz_1,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/213Benz_250C_070925.txt,213Benz
+22bipyr_1,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/22bipyr_250C_070925.txt,22bipyr
+dodecyla_1,Lipids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Lipids/dodecyla_250C_070725.txt,dodecyla
+undeca_1,Lipids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Lipids/undeca_250C_071125.txt,undeca
+nandecsulf_1,Lipids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Lipids/nandecsulf_250C_070925.txt,nandecsulf
+nanoctasulf_1,Lipids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Lipids/nanoctasulf_250C_070925.txt,nanoctasulf
+tridodeca_1,Lipids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Lipids/tridodeca_250C_070725.txt,tridodeca
+dodeca_1,Lipids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Lipids/dodeca_250C_070725.txt,dodeca
+d-gluc_1,Polydienes,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Polydienes/d-gluc_250C_071125.txt,d-gluc
+2deoxyrib_1,Polydienes,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Polydienes/2deoxyrib_250C_071125.txt,2deoxyrib
+d-rib_1,Polydienes,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Polydienes/d-rib_250C_071125.txt,d-rib
+16diph135hex_1,Polydienes,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Polydienes/16diph135hex_250C_070725.txt,16diph135hex
+Histidine_1,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/His/Histidine_250C_071925_Try2.txt,Histidine
+Histidine_2,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/His/Histidine_250C_071925_Try3.txt,Histidine
+Histidine_3,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/His/Histidine_250C_071925_Try1.txt,Histidine
+Histidine_4,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/His/Histidine_250C_071925_Try4.txt,Histidine
+Histidine_5,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/His/Histidine_250C_071925_Try5.txt,Histidine
+Histidine_6,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/His/Histidine_250C_070325.txt,Histidine
+Phenylalanine_1,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/phe/Phenylalanine_250C_071925_Try2.txt,Phenylalanine
+Phenylalanine_2,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/phe/Phenylalanine_250C_071925_Try3.txt,Phenylalanine
+Phenylalanine_3,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/phe/Phenylalanine_250C_071925_Try1.txt,Phenylalanine
+Phenylalanine_4,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/phe/Phenylalanine_250C_071925_Try4.txt,Phenylalanine
+Phenylalanine_5,Amino Acids,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Amino Acids/phe/Phenylalanine_250C_071925_Try5.txt,Phenylalanine
+1-Naphthalenesulfonic_1,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/1anthsulfonacidnasalt/1-Naphthalenesulfonic_acid sodium_salt_250C_071925_Try4.txt,1-Naphthalenesulfonic
+1-Naphthalenesulfonic_2,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/1anthsulfonacidnasalt/1-Naphthalenesulfonic_acid sodium_salt_250C_071925_Try5.txt,1-Naphthalenesulfonic
+1-Naphthalenesulfonic_3,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/1anthsulfonacidnasalt/1-Naphthalenesulfonic_acid sodium_salt_250C_071925_Try2.txt,1-Naphthalenesulfonic
+1-Naphthalenesulfonic_4,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/1anthsulfonacidnasalt/1-Naphthalenesulfonic_acid sodium_salt_250C_071925_Try3.txt,1-Naphthalenesulfonic
+1-Naphthalenesulfonic_5,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/1anthsulfonacidnasalt/1-Naphthalenesulfonic_acid sodium_salt_250C_071925_Try1.txt,1-Naphthalenesulfonic
+1-naphthalenesulfonic acid_1,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/1napsulfonacid/1-naphthalenesulfonic acid_250C_071125.txt,1-naphthalenesulfonic acid
+1-naphthalenesulfonic acid_2,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/1napsulfonacid/1-naphthalenesulfonic acid_250C_071925_Try1.txt,1-naphthalenesulfonic acid
+1-naphthalenesulfonic acid_3,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/1napsulfonacid/1-naphthalenesulfonic acid_250C_071925_Try3.txt,1-naphthalenesulfonic acid
+1-naphthalenesulfonic acid_4,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/1napsulfonacid/1-naphthalenesulfonic acid_250C_071925_Try2.txt,1-naphthalenesulfonic acid
+1-naphthalenesulfonic acid_5,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/1napsulfonacid/1-naphthalenesulfonic acid_250C_071925_Try6.txt,1-naphthalenesulfonic acid
+1-naphthalenesulfonic acid_6,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/1napsulfonacid/1-naphthalenesulfonic acid_250C_071925_Try7.txt,1-naphthalenesulfonic acid
+1-naphthalenesulfonic acid_7,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/1napsulfonacid/1-naphthalenesulfonic acid_250C_071925_Try5.txt,1-naphthalenesulfonic acid
+1-naphthalenesulfonic acid_8,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/1napsulfonacid/1-naphthalenesulfonic acid_250C_071925_Try4.txt,1-naphthalenesulfonic acid
+1-naphthalenesulfonic acid_9,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/1napsulfonacid/1-naphthalenesulfonic acid_250C_071925_Try9.txt,1-naphthalenesulfonic acid
+1-naphthalenesulfonic acid_10,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/1napsulfonacid/1-naphthalenesulfonic acid_250C_071925_Try8.txt,1-naphthalenesulfonic acid
+1-naphthalenesulfonic acid_11,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/1napsulfonacid/1-naphthalenesulfonic acid_250C_071925_Try10.txt,1-naphthalenesulfonic acid
+3-phenanthrenesulfonic_1,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/3phenanthsulfonacid/3-phenanthrenesulfonic_acid potassium salt_250C_071925_Try5.txt,3-phenanthrenesulfonic
+3-phenanthrenesulfonic_2,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/3phenanthsulfonacid/3-phenanthrenesulfonic_acid potassium salt_250C_071925_Try4.txt,3-phenanthrenesulfonic
+3-phenanthrenesulfonic_3,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/3phenanthsulfonacid/3-phenanthrenesulfonic_acid potassium salt_250C_071925_Try1.txt,3-phenanthrenesulfonic
+3-phenanthrenesulfonic_4,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/3phenanthsulfonacid/3-phenanthrenesulfonic_acid potassium salt_250C_071925_Try3.txt,3-phenanthrenesulfonic
+3-phenanthrenesulfonic_5,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/3phenanthsulfonacid/3-phenanthrenesulfonic_acid potassium salt_250C_071925_Try2.txt,3-phenanthrenesulfonic
+2-naphthalenesulfonic_1,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/2napsulfonacid/2-naphthalenesulfonic_acid_250C_071925_Try9.txt,2-naphthalenesulfonic
+2-naphthalenesulfonic_2,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/2napsulfonacid/2-naphthalenesulfonic_acid_250C_071925_Try8.txt,2-naphthalenesulfonic
+2-naphthalenesulfonic_3,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/2napsulfonacid/2-naphthalenesulfonic_acid_250C_071925_Try11.txt,2-naphthalenesulfonic
+2-naphthalenesulfonic_4,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/2napsulfonacid/2-naphthalenesulfonic_acid_250C_071925_Try10.txt,2-naphthalenesulfonic
+2-naphthalenesulfonic_5,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/2napsulfonacid/2-naphthalenesulfonic_acid_250C_071925_Try1.txt,2-naphthalenesulfonic
+2-naphthalenesulfonic_6,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/2napsulfonacid/2-naphthalenesulfonic_acid_250C_071925_Try3.txt,2-naphthalenesulfonic
+2-naphthalenesulfonic_7,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/2napsulfonacid/2-naphthalenesulfonic_acid_250C_071925_Try2.txt,2-naphthalenesulfonic
+2-naphthalenesulfonic_8,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/2napsulfonacid/2-naphthalenesulfonic_acid_250C_071925_Try6.txt,2-naphthalenesulfonic
+2-naphthalenesulfonic_9,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/2napsulfonacid/2-naphthalenesulfonic_acid_250C_071925_Try7.txt,2-naphthalenesulfonic
+2-naphthalenesulfonic_10,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/2napsulfonacid/2-naphthalenesulfonic_acid_250C_071925_Try5.txt,2-naphthalenesulfonic
+2-naphthalenesulfonic_11,PAHs,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/PAHs/2napsulfonacid/2-naphthalenesulfonic_acid_250C_071925_Try4.txt,2-naphthalenesulfonic
+Thymine_1,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/Thymine/Thymine_250C_071925_Try3.txt,Thymine
+Thymine_2,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/Thymine/Thymine_061125.txt,Thymine
+Thymine_3,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/Thymine/Thymine_250C_071925_Try2.txt,Thymine
+Thymine_4,Bases,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Bases/Thymine/Thymine_250C_071925_Try1.txt,Thymine
+Sulfur_1,Inorganic,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Inorganic/Sulfur/Sulfur_250C_071725_Try5.txt,Sulfur
+Sulfur_2,Inorganic,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Inorganic/Sulfur/Sulfur_250C_071725_Try4.txt,Sulfur
+Sulfur_3,Inorganic,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Inorganic/Sulfur/Sulfur_250C_071725_Try1.txt,Sulfur
+Sulfur_4,Inorganic,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Inorganic/Sulfur/Sulfur_250C_071725_Try3.txt,Sulfur
+Sulfur_5,Inorganic,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Individual/Inorganic/Sulfur/Sulfur_250C_071725_Try2.txt,Sulfur

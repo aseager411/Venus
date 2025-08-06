@@ -12,9 +12,7 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import NearestNeighbors
 import matplotlib.pyplot as plt
-from sklearn.preprocessing import normalize
 from scipy.cluster.hierarchy import dendrogram, linkage
-from scipy.spatial.distance import pdist
 import hdbscan
 
 # Import and clean GNPS data
