@@ -1,7 +1,10 @@
 # Author: Alex Seager
 # Last Version: 6/17/25
 #
-# Description: Load GNPS metadata from local JSON file, download peaks, and store with compound names
+# Description:  this file was used to scrape spectral data from the GNPS online library
+# by loading GNPS metadata from local JSON file, download peaks, and store with compound names
+# One of the libraries is stored as a CSV here so only use this if you want to download a different
+# library
 
 import json
 import pandas as pd

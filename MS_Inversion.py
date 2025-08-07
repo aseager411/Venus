@@ -1,17 +1,29 @@
 # Author: Alex Seager
 # Last Version: 6/17/25
 #
+# This file contains definitions for early inverse methods l0 and Lasso as well as scoring
+# functions f-score and strict recall which are used widely in other files. the model test
+# can be a useful visualization but is generally imporved on in the master test file
+#
 # Description: I am attempting to invert simulated MS data and recover which molecules 
 # contributed to the spectral signal. I explore many ways at attempting to do this.
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+import matplotlib.cm as cm
+from joblib import Parallel, delayed
 from itertools import combinations
 from sklearn.linear_model import Lasso
 from sklearn.linear_model import LassoCV
 from sklearn.metrics import r2_score
-# importing generated data from teh data generation file
-from MS_Model_Current import (
+from abess.linear import LinearRegression
+from scipy.optimize import lsq_linear
+from numpy.linalg import cond
+
+
+# importing generated data from the data generation file
+from MS_Model import (
     spectralMatrix,
     GetSampleSpectrum,
     AddNoise,
@@ -21,59 +33,155 @@ from MS_Model_Current import (
     NUMWAVELENGTHS,
     SNR
 )
+from ABESS import (
+    ABESS
+)
+
 
 # Tasks
 # add cost to L0
-# normalize guesses ie guessed concentrations add to 1
+# normalize guesses ie guessed concentrations add to 1?
 # consider concentrations in model scoring?
-# confusion matrix - false neg false pos etc
 
 # Questions
 # is it worth it to implement concentrations adding to one optimization
 # ask how to optimize the instrument - how many wavelengths, what resolution
 
 
-# Generate all possible molecule combinations and choose the best linear fit
-#
-# Arguments: matrix -> the matrix of molecular spectra
-#            vector spectra -> the sample spectrum which in a linear combo of matrix columns
-# Returns:   vector -> the guess for which molecules at what concentrations made up the sample
-def Brute_Force(matrix, spectra):
-    # store parameters of the best solution
-    best_combo   = None
-    best_R2      = -np.inf
+# Import and process spectral matrix, averaging duplicate molecule columns
+# import data from csv for testing
+def LoadRealMatrix(csv_path, numMolecules=None, numWavelengths=None, normalize=True):
+    # Read the full matrix; first column is the bin index
+    df_full = pd.read_csv(csv_path, index_col=0)
+
+    # Truncate the mz/wavelength range
+    df = df_full.loc[50:451]
+
+    # Derive “short” names by stripping off the trailing “_1”, “_2”, etc.
+    # e.g. “alanine_1” → “alanine”
+    short_names = df.columns.str.rsplit("_", n=1).str[0]
+
+    # Group columns by that short name and take the mean
+    grouped_df = df.T.groupby(short_names).mean().T
+
+    # Optional truncation of rows/columns
+    if numWavelengths is not None:
+        grouped_df = grouped_df.iloc[:numWavelengths, :]
+    if numMolecules is not None:
+        grouped_df = grouped_df.iloc[:, :numMolecules]
+
+    # Convert to numpy array
+    A = grouped_df.values
+
+    # Column‐wise normalization (if requested)
+    if normalize:
+        norms = np.linalg.norm(A, axis=0)
+        norms[norms == 0] = 1
+        A = A / norms
+
+    return A, grouped_df
+
+
+# Helper for evaluating one combination
+# Modified evaluate_combo with safe guards
+def evaluate_combo(cols, matrix, spectra, criterion, n_obs, n_vars, true_support=None):
+    subM = matrix[:, cols]
+
+    if np.any(~np.isfinite(subM)) or np.any(~np.isfinite(spectra)):
+        return None  # invalid input
+
+    try:
+        result = lsq_linear(
+            subM,
+            spectra,
+            bounds=(0, np.inf),
+            method='trf',
+            tol=1e-8,
+            max_iter=1000,
+            lsmr_tol='auto'
+        )
+    except Exception:
+        return None
+
+    x_hat = result.x
+    if not np.all(np.isfinite(x_hat)):
+        return None
+
+    y_hat = subM @ x_hat
+    if not np.all(np.isfinite(y_hat)):
+        return None
+
+    rss = np.sum((spectra - y_hat) ** 2)
+    rss = max(rss, 1e-14)  # floor to avoid log issues
+
+    k = len(cols)
+
+    if criterion == 'AIC':
+        score = 2 * k + n_obs * np.log(rss / n_obs)
+    elif criterion == 'BIC':
+        score = k * np.log(n_obs) + n_obs * np.log(rss / n_obs)
+    elif criterion == 'MDL':
+        score = k * np.log(n_vars) + np.log(rss)
+    else:
+        raise ValueError("Criterion must be 'AIC', 'BIC', or 'MDL'")
+
+    is_true = False
+    if true_support is not None:
+        is_true = set(cols) == set(true_support)
+
+    return (score, cols, x_hat, rss, cond(subM), is_true)
+
+
+def L_Zero(matrix, spectra, criterion='AIC', max_support=4, n_jobs=-1, true_support=None):
+    best_score = np.inf
+    best_combo = None
     best_factors = None
 
-    n = matrix.shape[1]
-    ss_tot = np.sum((spectra - np.mean(spectra))**2)
+    n_obs, n_vars = matrix.shape
 
-    # loop over all non-empty subsets of columns
-    for r in range(1, n+1):
-        for cols in combinations(range(n), r):
-            subM = matrix[:, cols]  # shape (m, r)
+    # For later diagnostics
+    true_support_score = None
 
-            # least-squares fit of subM @ x ≈ spectra
-            x_hat, residuals, rank, s = np.linalg.lstsq(subM, spectra, rcond=None)
+    for r in range(1, max_support + 1):
+        combos = list(combinations(range(n_vars), r))
 
-            # get the sum of squared residuals if the system is full rank (dont get it fully)
-            if residuals.size > 0:
-                ss_res = residuals[0]
-            else:
-                # if no residuals returned (e.g. underdetermined),
-                # compute it explicitly:
-                y_hat = subM.dot(x_hat)
-                ss_res = np.sum((spectra - y_hat)**2)
+        results = Parallel(n_jobs=n_jobs)(
+            delayed(evaluate_combo)(cols, matrix, spectra, criterion, n_obs, n_vars, true_support)
+            for cols in combos
+        )
 
-            # compute R^2
-            R2 = 1 - ss_res/ss_tot if ss_tot > 0 else 0
+        for res in results:
+            if res is None:
+                continue
+            score, cols, x_hat, rss, cond_subm, is_true = res
 
-            # update best if this is a better fit
-            if R2 > best_R2:
-                best_R2      = R2
-                best_combo   = cols
+            # Capture true support score
+            if is_true:
+                true_support_score = score
+
+            # Update best
+            if score < best_score:
+                best_score = score
+                best_combo = cols
                 best_factors = x_hat
 
-    return best_combo, best_factors, best_R2
+    # Diagnostics printout when true support is provided
+    if true_support is not None:
+        print("=== L_Zero diagnostics ===")
+        print(f" True support: {tuple(true_support)} | score: {true_support_score}")
+        print(f" Selected support: {tuple(best_combo)} | score: {best_score}")
+        if true_support_score is not None:
+            gap = best_score - true_support_score
+            print(f" Score gap (selected - true): {gap:.6f}")
+        else:
+            print(" Warning: true support was not evaluated (possibly outside max_support).")
+
+    # Format output vector
+    x_full = np.zeros(n_vars)
+    if best_combo is not None:
+        x_full[np.array(best_combo)] = best_factors
+
+    return x_full
 
 
 # Linear fit with L1 term which pulls coefficients to zero
@@ -81,12 +189,10 @@ def Brute_Force(matrix, spectra):
 # Arguments: matrix -> the matrix of molecular spectra
 #            vector spectra -> the sample spectrum which in a linear combo of matrix columns
 # Returns:   vector -> the guess for which molecules at what concentrations made up the sample
-def Lasso_L1(matrix, spectra):
-    # Pick the L1 penalty parameter α
-    alpha = 0.00001
+def Lasso_L1(matrix, spectra, alpha):
 
     # Use scikit-learn model
-    lasso = Lasso(alpha=alpha, fit_intercept=False, max_iter=10000)
+    lasso = Lasso(alpha=alpha, fit_intercept=False, max_iter=10000, positive = True)
 
     # Run the fit
     lasso.fit(matrix, spectra)
@@ -101,127 +207,223 @@ def Lasso_L1(matrix, spectra):
     # Compute R^2 manually
     r2 = r2_score(spectra, y_hat)
 
-    return x_hat, alpha, r2
+    #print("Lasso ran")
+
+    return x_hat
 
 
-# right now this often selects the lowest alpha in the range so it's p useless
-def Lasso_L1_With_Cv(matrix, spectra):
-    # Generate alphas to try
-    alphas = np.logspace(-4, 0, 50)
-    # Set up LassoCV
-    lasso_cv = LassoCV(alphas=alphas, cv=5, fit_intercept=False, max_iter=10000)
-    # Fit to data, selecting the alpha that minimizes CV error
+# find a good alpha via cross-validation with many samples
+# Haven't been able to get this to work without just picking the lowest alpha
+def Lasso_L1_With_Cv(matrix, spectra, alphas=np.logspace(-5, 0, 50)):
+    """
+    Fits a Lasso regression with cross-validation to select the best alpha.
+
+    Parameters:
+        matrix (ndarray): 2D array where each column is a reference molecular spectrum
+        spectra (ndarray): 1D array of the mixed/observed spectrum
+        alphas (array-like): List of alpha values to search over (default: logspace)
+
+    Returns:
+        x_hat (ndarray): Coefficient vector indicating contributions of each reference
+        best_alpha (float): Chosen alpha value
+        r2 (float): R^2 score of the fit
+    """
+    lasso_cv = LassoCV(alphas=alphas, fit_intercept=False, max_iter=10000, positive=True, cv=5)
     lasso_cv.fit(matrix, spectra)
-    # Extract the sparse solution and best alpha
+
     x_hat = lasso_cv.coef_
-    best_alpha = lasso_cv.alpha_
-
-    # Compute R² on the full dataset:
-    #    R² = 1 - SS_res / SS_tot
     y_hat = matrix.dot(x_hat)
-    ss_res = np.sum((spectra - y_hat) ** 2)
-    ss_tot = np.sum((spectra - np.mean(spectra)) ** 2)
-    r2 = 1 - ss_res / ss_tot if ss_tot > 0 else 0.0
+    r2 = r2_score(spectra, y_hat)
 
-    return x_hat, best_alpha, r2
+    print("Best alpha selected by cross-validation:", lasso_cv.alpha_)
+
+    return x_hat
+    
 
 
-##scoring model using binary prediction
-def f_beta(trueSet, predSet, beta=0.5):
-    true_set = set(trueSet)
-    pred_set = set(predSet)
+# evaluating model predictions using F Beta
+#
+# Arguments: vector trueSet -> The true molecules in the signal we want to recover 
+#            vector predSet -> The molecules predicted by the model
+#            float beta     -> below one favors retrieval over ... 
+# Returns:   float -> The F score value between zero and one 
+def f_beta(trueSet, predSet, beta=1):
+    def extract_name(x):
+        # If it's a string or int-like, return as is
+        if isinstance(x, (str, int, np.integer)):
+            return x
+        # If it's a tuple or list, return the first element
+        elif isinstance(x, (tuple, list)):
+            return x[0]
+        # Otherwise assume it's a scalar (e.g., float or np.float32) and return it
+        else:
+            return int(x)  # assumes float is a molecule index (e.g., 244.0)
 
-    tp = len(pred_set & true_set) # True positives
-    fp = len(pred_set - true_set) # False positives
-    fn = len(true_set - pred_set) # False negatives
-    print("in common: ", tp)
+    true_set = set(extract_name(t) for t in trueSet)
+    pred_set = set(extract_name(p) for p in predSet)
 
-    # precision & recall
+    tp = len(pred_set & true_set)
+    fp = len(pred_set - true_set)
+    fn = len(true_set - pred_set)
+
     precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
     recall    = tp / (tp + fn) if (tp + fn) > 0 else 0.0
 
-    # Generalized F score favoring precision 
     β2 = beta**2
     num = (1 + β2) * precision * recall
     den = β2 * precision + recall
-    return num/den if den>0 else 0.0
+    return num / den if den > 0 else 0.0
 
-# Testing L1 for SNR and sample complexity
-def Model_Test():  #change to test function
-    # spectralMatrix is the same every run
-    #print("Fixed spectralMatrix:\n", spectralMatrix)
-    snr_colors = {3: 'C0', 5: 'C1', 8: 'C2'}
-    marker_map  = {3: 'o', 5: 's', 8: '^'}
-    offsets     = {3:-0.2, 5:0.0, 8:+0.2}
+#scoring metric based on strict precision
+def strict_recall_score(trueSet, predSet, precision_threshold=0.95):
+    def extract_name(x):
+        if isinstance(x, (str, int, np.integer)):
+            return x
+        elif isinstance(x, (tuple, list)):
+            return x[0]
+        else:
+            return int(x)
+
+    true_set = set(extract_name(t) for t in trueSet)
+    pred_set = set(extract_name(p) for p in predSet)
+
+    tp = len(pred_set & true_set)
+    fp = len(pred_set - true_set)
+    fn = len(true_set - pred_set)
+
+    precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+    recall    = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+
+    if precision < precision_threshold:
+        return -recall  # penalize if below precision threshold
+    else:
+        return recall   # valid only if precision ≥ threshold
+
+
+###########
+#  Tests  #
+###########
+def OneSampleTest(sampleComplexity, spectralMatrix, snr):
+    s, trueMolecules = GetSampleSpectrum(sampleComplexity, spectralMatrix,)
+    noisySpec = AddNoise(snr, s)
+    #change method here
+    predicted = Lasso_L1(spectralMatrix, noisySpec, 0.00001)
+    print("true molecules: ", trueMolecules)
+    print("predicted molecules: ", predicted)
+    f_score = f_beta(trueMolecules, predicted)
+    print ("f score: ", f_score)
+
+# testing inverse models over many samples across complexity and noise levels
+def Model_Test(spectralMatrix, a, noise=True, score_fn=f_beta, sampleRange = 20):
+    import matplotlib.pyplot as plt
+    import numpy as np
+    from joblib import Parallel, delayed
+
+    snr_values = [3, 5, 8] if noise else [None]
+    snr_colors = {3: 'C0', 5: 'C1', 8: 'C2', None: 'C0'}
+    marker_map  = {3: 'o', 5: 's', 8: '^', None: 'o'}
+    offsets     = {3:-0.2, 5:0.0, 8:+0.2, None: 0.0}
     jitter_amp  = 0.05
 
-    # draw a fresh noiseless sample (new random mixture)
-    fig, ax = plt.subplots(figsize=(6,4))
+    fig, ax = plt.subplots(figsize=(6, 4))
 
-    # loop over the three SNRs
-    for snr in (3, 5, 8):
-        xs = []  # sample complexities
-        ys = []  # scores
-        # loop over sample complexities
-        for j in range(1, 11):
-            SAMPLECOMPLEXITY = j
-            for k in range (5):
-                s, trueMolecules = GetSampleSpectrum(
-                    SAMPLECOMPLEXITY,
-                    spectralMatrix,
-                    NUMMOLECULES,
-                    NUMWAVELENGTHS
-                )
-                #print("New sample spectrum:", s)
+    # Define tasks
+    tasks = [
+        (snr, j, k)
+        for snr in snr_values
+        for j in range(1, sampleRange + 1)
+        for k in range(3)  # increase for repeats
+    ]
 
-                # add noise
-                noisySpectra = AddNoise(snr, s)
-                #print("New noisy spectrum:", noisySpectra)
+    # Helper function
+    def run_single_test(spectralMatrix, a, snr, j, k, offsets, jitter_amp, noise):
+        sampleComplexity = j
+        s, trueMolecules = GetSampleSpectrum(sampleComplexity, spectralMatrix)
 
-                # Run fit
-                x_sol, alpha, R2 = Lasso_L1(spectralMatrix, noisySpectra)
+        noisySpectra = AddNoise(snr, s) if noise else s
+        #Change model here
+        x_sol = Lasso_L1(spectralMatrix, noisySpectra, a) #sMax = 25, exhaustive_k = True)
 
-                ## Evaluate model efficiency
-                # Disregard predictions below this concentration
-                gamma = 0.001 #* max(abs(x_sol))
-                # take our solution and pull out which molecules were selected (low out low concentration predictions)
-                predictedMolecules = [i for i, v in enumerate(x_sol) if abs(v) > gamma] 
-                print("molecules chosen by model: ", predictedMolecules)
-                print("true molecules: ", trueMolecules)
-                # score the models choices favoring precision over recall
-                score = f_beta(trueMolecules, predictedMolecules)
-                print("score: ", score) 
-                
-                # collect for plotting
-                xs.append(j)
-                ys.append(score)
+        #change required concentration here
+        gamma = 0.001
+        if isinstance(x_sol[0], tuple):
+            predictedMolecules = [name for (name, coef) in x_sol if abs(coef) > gamma]
+        else:
+            predictedMolecules = [i for i, v in enumerate(x_sol) if abs(v) > gamma]
 
-        # scatter for this SNR
-        # apply fixed offset + random jitter for each point
-        x_plot = [x + offsets[snr] + np.random.uniform(-jitter_amp, jitter_amp)
-                  for x in xs]
+        print(f"SNR={snr} | SampleComplexity={j} | True={sorted(trueMolecules)} | Predicted={sorted(predictedMolecules)}")
+        score = score_fn(trueMolecules, predictedMolecules)
+        x_val = j + offsets[snr] + np.random.uniform(-jitter_amp, jitter_amp)
+        return snr, x_val, score
 
-        ax.scatter(x_plot, ys,
+    # Run in parallel
+    results = Parallel(n_jobs=-1, backend='loky')(
+        delayed(run_single_test)(spectralMatrix, a, snr, j, k, offsets, jitter_amp, noise)
+        for (snr, j, k) in tasks
+    )
+
+    # Plotting
+    for snr in snr_values:
+        xs = [x for s, x, y in results if s == snr]
+        ys = [y for s, x, y in results if s == snr]
+
+        ax.scatter(xs, ys,
                    color=snr_colors[snr],
                    marker=marker_map[snr],
-                   label=f'SNR = {snr}',
+                   label=f'SNR = {snr}' if noise else None,
                    s=60, alpha=0.8,
                    edgecolors='k', linewidths=0.5)
 
     ax.set_xlabel('Sample Complexity (number of molecules mixed)')
-    ax.set_ylabel('Weighted F-Score')
+    ax.set_ylabel('Recall')
     ax.set_title('Lasso Recovery Score vs. Sample Complexity')
-    ax.set_xticks(range(1, 11))
-    ax.set_ylim(-0.05, 1.05)
-    ax.legend(title='Noise level')
+
+    all_j_values = [j for (_, j, _) in tasks]
+    max_j = max(all_j_values)
+
+    # Dynamic tick spacing
+    if max_j <= 20:
+        xtick_step = 1
+        fontsize = 8
+    elif max_j <= 40:
+        xtick_step = 2
+        fontsize = 6
+    elif max_j <= 80:
+        xtick_step = 5
+        fontsize = 5
+    else:
+        xtick_step = 10
+        fontsize = 4
+
+    ax.set_xticks(range(0, max_j + xtick_step, xtick_step))
+    ax.tick_params(axis='x', labelsize=fontsize)
+    ax.set_xlim(0.5, max_j + 0.5)
+
+    # Determine dynamic Y-axis limits based on score range
+    all_scores = [y for (_, _, y) in results]
+    y_min = min(min(all_scores), -0.05)
+    y_max = max(max(all_scores), 1.05)
+    ax.set_ylim(y_min - 0.05, y_max + 0.05)
+
+    # Add horizontal line at 0 if negatives exist
+    if y_min < 0:
+        ax.axhline(0, color='gray', linewidth=1, linestyle='--')
+
+    if noise:
+        ax.legend(title='Noise level')
+
     ax.grid(True, linestyle='--', alpha=0.4)
 
     plt.tight_layout()
-    plt.show()
+    plt.savefig("Test.png", dpi=300)
 
 
 def main():
-    Model_Test()
+    file = "mass_spectra_individual.csv"
+    A, df = LoadRealMatrix(file)
+
+    Model_Test(A, 0.001, noise = True, score_fn=strict_recall_score, sampleRange = 5)
+  
 
 if __name__ == "__main__":
     main()

@@ -6,6 +6,8 @@
 #              approach. 
 
 
+#should be noramlizing mixtures otherwise easy to tell complexity by signal strength
+
 #save the distribution of log probs
 # -----------------------------
 # Step 1: Import Libraries
@@ -19,7 +21,7 @@ from torch.utils.data import Dataset, DataLoader
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from MS_Inversion_Toy import (
+from MS_Inversion import (
     strict_recall_score,
     f_beta
 )
@@ -357,7 +359,7 @@ def evaluate_model_with_noise_levels(model, spectral_matrix, molecule_names, dev
                 equal_weights=True,
                 snr=snr,
                 add_noise=noise,
-                seed=(snr if noise else 0)*100 + complexity
+                seed=None
             )
 
             model.eval()

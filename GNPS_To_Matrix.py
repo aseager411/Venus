@@ -1,7 +1,7 @@
 # Author: Alex Seager
 # Last Version: 6/17/25
 #
-# Description: Convert GNPS spectra to a binned matrix with compound names as columns
+# Description: This is the second step in importing new GNPS data to a local csv file
 
 import numpy as np
 import pandas as pd

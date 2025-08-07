@@ -1,9 +1,9 @@
 # Author: Alex Seager
 # Last Version: 7/7/25
 #
-# Description: Attempting to learn to classify important molecules by group.
+# Exploratory file to group similar molecules
+# Description: Attempting to learn to classify important molecules by group without labels
 # 
-# largely exploratory, no useful conclusions
 
 import numpy as np
 import pandas as pd

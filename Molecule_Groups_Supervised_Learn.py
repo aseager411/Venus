@@ -1,6 +1,8 @@
 # Author: Alex Seager
 # Last Version: 7/16/25
 #
+# Exploratory file to group similar molecules
+#
 # Description: I am attempting to build a neural network which classifies 
 # molecules into molecular groups based on their spectra. I am wokring 
 # with data from the MIT accuTOF MS instrument which is manually labelled

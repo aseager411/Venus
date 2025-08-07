@@ -1,3 +1,5 @@
+#Testing the saved neural net
+
 import torch
 import numpy as np
 import pandas as pd
@@ -5,14 +7,14 @@ from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from MS_Inversion_NN import (
+from MS_Neural_Net import (
     load_and_prepare_data,
     generate_mixture_dataset,
     SpectraClassifier,
     evaluate_model_with_noise_levels
 )
 
-from MS_Inversion_Toy import (
+from MS_Inversion import (
     strict_recall_score,
     f_beta
 )
@@ -71,7 +73,7 @@ def main():
         snr_values=[3,5,8],
         max_complexity=25,
         N_per_complexity=3,
-        threshold=0.95,
+        threshold=0.7,
         noise=True,
         score_fn=strict_recall_score
     )

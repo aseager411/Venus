@@ -12,7 +12,7 @@ from sklearn.metrics import r2_score
 from sklearn.linear_model import Lasso
 from scipy.optimize import lsq_linear
 
-from MS_Model_Current import (
+from MS_Model import (
     spectralMatrix,
     GetSampleSpectrum,
     AddNoise

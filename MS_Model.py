@@ -1,5 +1,8 @@
 # Author: Alex Seager
-# Last Version: 6/6/25
+# Last Version: 6/11/25
+#
+# This file can be used to generate simple fake spectra and contains useful functions to add
+# noise and create samples which are passed to more advanced files
 #
 # Description: I am attempting to model and simulate MS data. I generate a matrix of molecules 
 # and their artificial spectra with a random value at each 'Wavelength.' This creates the 
@@ -8,183 +11,188 @@
 # similarity, and the number of molecules and wavelengths. one can also specify the resolution 
 # of the data and parameters of the mixed signal
 
-
-#Tasks
-# sparse spectra (k sparsity) -> generate whole matrix and if entry is less than k make it zero
-# design matrix where maximum correlation between every pair is between a certain value - correlation calculatued by dot product between two c\olumns between zero and one 
-# make a matrix from real spectra can be hand selected important features or can be data from something else entirely (Hi-Tran)
-
-
-### Questions
-# exact vs mean k sparsity?
-# if we check every entry for >k we end up with only values >k
-## How do the parameters converge ie when is it impossible to have a matrix of given parameters
-# reccomended algorthm for similarity of vectors? worth it to store norms?
-#
-# When to save verisons / start a new file
-# am i overdocumenting/should I just be using the global parameters
-
+import matplotlib.pyplot as plt
 import numpy as np
-#np.random.seed(420)  # Seed the random number generator for repropducability 
+#np.random.seed(42)  # Seed the random number generator for repropducability 
 
 # Defining global parameters
-NUMMOLECULES = 5
-WAVELENGTHS = 10
-SIGNALRESOLUTION = 1
-SAMPLECOMPLEXITY = 2
-MIXINGRESOLUTION = 1
-SPARSITY = 0.8
+NUMMOLECULES = 100
+NUMWAVELENGTHS = 100
+SPARSITY = 0.98
 MAXSIMILARITY = 0.5
 
-# Creating a matrix of spectra
+# Sampling parameters
+SAMPLECOMPLEXITY = 3 #np.random.randint(1, NUMMOLECULES+1) # randomize this
+SNR = 8
+
+# Generate the random spectra of one molecule given mean sparsity 
+#
+# Arguments: float sparsity -> what proportion of entries in the matrix are zero
+#            int numWavelengths -> how many different wavelengths do we want for each spectrum?
+# Returns: a vector -> the spectra of the molecule
+def GenerateSpectra(sparsity, numWavelengths):
+    # Generate random floats
+    values = np.random.rand(numWavelengths)
+    # Draw a bernoulli mask -> 0 with prob=sparsity, 1 with prob=1–sparsity 
+    mask = np.random.rand(numWavelengths) >= sparsity
+    # If this is this zero vector ie the spectra is empty add one peak
+    if not mask.any():  
+        idx = np.random.randint(numWavelengths)
+        mask[idx] = True
+    # Zero out according to mask
+    v = values * mask
+
+    # Calculate the norm of this vector 
+    norm = np.linalg.norm(v)
+    return v, norm
+
+# Generate the random spectra of a group of molecules as a matrix given a maximum similarity, 
+# number of molecules, and number of wavelengths
 #
 # Arguments: int numMolecules -> how many molecules do we want to simulate spectra for?
-#            int wavelengths -> how many different wavelengths do we want for each spectrum?
-#            float SignalResolution -> what is the resolution of the intensity of our spectra?
-#            This will be between [0, 1) where 1 means there is a binary signal at each 
-#            wavelength
-# Returns: A spectral matrix with randomly generated spectra based on given parameters
-def SimpleSpectralMatrix(numMolecules, wavelengths, signalResolution):
-    N = int(1.0 / signalResolution)  # Determine how many signal strengths are possible
-    # Create the matrix (wavelngth x molecules) using numpy with random floats 
-    A = np.random.randint(0, N+1, size=(wavelengths, numMolecules)) * signalResolution
-    return A
-
-
-# Creating a matrix of mean k sparsity 
-#
-# Arguments: int numMolecules -> how many molecules do we want to simulate spectra for?
-#            int wavelengths -> how many different wavelengths do we want for each spectrum?
-#            This will be between [0, 1) where 1 means there is a binary signal at each 
-#            wavelength
-#            float sparsity -> what proportion of entries in the matrix are zero       
-# Returns: A spectral matrix (numpy matrix object) based on given parameters
-def MeanSparseSpectralMatrix(numMolecules, wavelengths, sparsity):
-    # Generate a boolean matrix representing which positions will be zero and non-zero (MEAN sparsity K)
-    B = (np.random.rand(wavelengths, numMolecules) > sparsity) 
-    # Generate actual values for the matrix which are uniform
-    U = np.random.rand(wavelengths, numMolecules)
-    # Create the sparse matrix by multiplying U element wise with B the boolean matrix
-    A = U * B
-    print("Test03: true sparsity is ", np.mean(A == 0))
-    return A
-
-
-# Creating a matrix of exactly K sparsity
-#
-# Arguments: int numMolecules -> how many molecules do we want to simulate spectra for?
-#            int wavelengths -> how many different wavelengths do we want for each spectrum?
-#            This will be between [0, 1) where 1 means there is a binary signal at each 
-#            wavelength
-#            float sparsity -> what proportion of entries in the matrix are zero      
-# Returns: A spectral matrix (numpy matrix object) based on given parameters
-def ExactSparseSpectralMatrix(numMolecules, wavelengths, sparsity):
-    total = wavelengths * numMolecules
-    num_nonzero = int((1.0 - sparsity) * total)  # how many entries should be nonzero
-    # Generate zero matrix
-    A = np.zeros((wavelengths, numMolecules), dtype=float)
-    # Choose num_nonzero distinct indices so that exactly k fraction remain zero
-    chosen_nonzero = np.random.choice(total, size=num_nonzero, replace=False)
-    # Generate that many random floats in [0,1)
-    random_vals = np.random.rand(num_nonzero)
-    # Assign them into A at the chosen indices
-    A.flat[chosen_nonzero] = random_vals
-    #print("Test03: true sparsity is ", np.mean(A == 0))
-    return A
-
-
-# Calculate the cosine similarity of two spectra vectors
-#
-# Arguments: vectors a and b representing columns of a spectral matrix     
-# Returns: a float (0, 1) where 0 means the vectors are orthogonal and 1 means they are the same vector
-def SpectraSimilarity(a, b):
-    # numpy dot product doesn't like the zero vector so deal with this case separately
-    if ((a == 0).all() or (b == 0).all()):
-        return 0
-    # Compute dot product
-    dot = np.dot(a, b)
-    # Compute norms
-    norm_a = np.linalg.norm(a)
-    norm_b = np.linalg.norm(b)
-    return dot / (norm_a * norm_b)
+#            int numWavelengths -> how many different wavelengths do we want for each spectrum?
+#            float maxSimilarity -> the maximum similarity between any two columns we will allow for our matrix
+# Returns: a vector -> matrix representing the spectra of the molecules
+def GenerateMatrix(numMolecules, numWavelengths, maxSimilarity):
     
+    # Store normalized columns for similarity checks
+    A_norm = np.zeros((numWavelengths, 0))
+    # List of accepted raw spectra
+    columns = []
+
+    # Keep going until we have enough columns
+    while len(columns) < numMolecules:
+        # Draw one sparse spectrum + its norm
+        v, norm_v = GenerateSpectra(SPARSITY, NUMWAVELENGTHS)
+        # Skip spectra which are empty (not using for now)
+        if norm_v == 0:
+            v_norm = v #it's the zero vector already
+        else:
+            # Normalize to check cosine similarity
+            v_norm = v / norm_v
+
+        # If it’s the first column, accept immediately
+        if A_norm.shape[1] == 0:    # do we have zero columns?
+            columns.append(v)
+            A_norm = np.column_stack((A_norm, v_norm))
+            continue
+
+        # Compute max cosine similarity vs. what’s already in A_norm
+        if (A_norm.T @ v_norm).max() <= maxSimilarity:
+            columns.append(v)
+            A_norm = np.column_stack((A_norm, v_norm))
+        # Otherwise just loop back and redraw
+
+    # Stack all accepted raw vectors into the final matrix
+    A = np.column_stack(columns)
+    return A
 
 
-# Check the maximum cosine similarity of any two vectors in the matrix (using brute force)
-#
-# Arguments: matrix A -> molecular spectra
-#            float maxSimilarity -> the maximum similarity we will allow for our matrix
-# Returns: a float (0, 1) where 0 means the vectors are orthogonal and 1 means they are the same vector
-def MatrixSimilarityChecker(A, maxSimilarity):
-    n_cols = A.shape[1]
-    for col1 in range(n_cols - 1): # Iterate first column which is never the last one
-        for col2 in range(col1 + 1, n_cols): # Iterate second column which is never the first one
-            if SpectraSimilarity(A[:, col1], A[:, col2]) > maxSimilarity:
-                print(A)
-                print("columns ", col1, "and ", col2, "have similarity ", SpectraSimilarity(A[:, col1], A[:, col2])
-                      , " > ", maxSimilarity)
-                return False
-    return True
+##############################
+#for testing
+spectralMatrix = GenerateMatrix(NUMMOLECULES, NUMWAVELENGTHS, MAXSIMILARITY)
+##############################
 
-
-# Get the spectra of one molecule
-#
-# Arguments: int molecule -> the key of the selected molecule 
-#            Matrix spectralMatrix -> a matrix of spectral data
-# Returns: a column vector(array?) -> the spectra of that molecule
-def GetMoleculeSpectra(molecule, spectralMatrix):
-    return spectralMatrix[:, molecule]
 
 # Get a combined spectra of multiple (randomly selected) molecules 
 #
 # Arguments: int sampleComplexity -> how many different molecules are we mixing
-#            float mixingResolution -> what is the resolution of the concentration of each
-#            molecule? This will be between [0, 1) where 1 means there is no variance in 
-#            concentration of each molecule ie every molecule has equal concentration
-#            int numMolecules -> how many molecules do we want to simulate spectra for?
 #            matrix spectralMatrix -> a matrix of spectral data
-#            int wavelengths -> how many different wavelengths do we want for each spectrum?
 # Returns: a column vector -> the combined spectra of the sample
-def GetSampleSpectrum(sampleComplexity, mixingResolution, spectralMatrix, numMolecules, wavelengths):
-    spectra = np.zeros(wavelengths)
+def GetSampleSpectrum(sampleComplexity, spectralMatrix):
+    spectra = np.zeros(spectralMatrix.shape[0])
     # randomly decide which molecules to add to the sample without replacement
-    molecules = np.random.choice(numMolecules, size = sampleComplexity, replace=False)
-    print("test01: molecules are " , molecules)
-    M = int(1.0 / mixingResolution)
+    molecules = np.random.choice(spectralMatrix.shape[1], size = sampleComplexity, replace=False)
+
+
+    #print("test01: molecules are " , molecules)
+
+    # Create an associated concentration for each molecule which will sum to 1
+    concentrations = np.random.dirichlet(alpha=np.ones(sampleComplexity)) #Black box
+    # Create counter to iterate concentrations
+    j = 0
+
+    #loop through chosen molecules assigning concentrations
     for i in molecules: # the actual integer value not the place in the list
-        # randomly decide concentration of each molecule with replacement at specified resolution
-        concentration = np.random.randint(1, M+1) * mixingResolution
-        print("test02: concentration of ", i, "is " , concentration)
+
+
+        #concentration = concentrations[j]
+
+        concentration = 1   #TEMPORARY FOR TESTING
+
+        j += 1
+       # print("test02: concentration of ", i, "is " , concentration)
         spectra += spectralMatrix[:, i] * concentration
-    return spectra 
+    return spectra, molecules 
 
-
-
-# Generate a matrix with given parameters(molecules, number of wavelengths, similarity of spectra, and sparsity)
+# Add multiplicative gaussian noise to a sample spectra
 #
-# Arguments: int numMolecules -> how many molecules do we want to simulate spectra for?
-#            int wavelengths -> how many different wavelengths do we want for each spectrum?
-#            float maxSimilarity -> the maximum similarity we will allow for our matrix
-#            float sparsity -> what proportion of entries in the matrix are zero
-# Returns: a column vector -> the combined spectra of the sample
-def GenerateMatrix(numMolecules, wavelengths, maxSimilarity, sparsity):
-    tries = 0
-    hold = True
-    while hold:
-        tries += 1
-        B = ExactSparseSpectralMatrix(numMolecules, wavelengths, sparsity)
-        if MatrixSimilarityChecker(B, MAXSIMILARITY):
-            hold = False
-    print("it took ", tries, " tries to make a matrix with these parameters!")
-    return B
+# Arguments: int SNR -> desired signal to noise ratio
+#            vector spectra -> a spectral sample
+# Returns:  vector -> the given spectra with noise added
+def AddNoise(snr, spectra):
+    spectra = spectra.copy()
+    max_peak = np.max(spectra)
+    if max_peak == 0:
+        return spectra  # nothing to add noise to
+
+    # multiplicative noise standard deviation relative to max peak
+    sigma = 1.0 / snr  # σ of multiplicative factor
+    factors = np.random.normal(loc=1.0, scale=sigma, size=spectra.shape)
+
+    mask = (spectra != 0)
+    spectra[mask] = spectra[mask] * factors[mask]
+    return spectra
+
+
+# Plot given spectra
+# 
+# Arguments: float vector spectra -> a vector representing generated spectra
+# Returns: None
+def PlotSpectra(spectra, bin_width=1.0, mz_min=0.0):
+    spectra = np.array(spectra, dtype=float)
+
+    # Normalize spectrum
+    max_val = spectra.max()
+    if max_val > 0:
+        spectra /= max_val
+
+    num_bins = len(spectra)
+    x = np.arange(num_bins) * bin_width + mz_min
+    mz_max = x[-1]
+
+    plt.figure(figsize=(10, 3))
+    plt.bar(x, spectra, width=bin_width * 0.9)
+    plt.xlabel('m/z')
+    plt.ylabel('Normalized Intensity')
+    plt.title('Sample Spectrum')
+
+    # Determine tick spacing based on range
+    range_mz = mz_max - mz_min
+    if range_mz <= 100:
+        tick_spacing = 5
+    elif range_mz <= 400:
+        tick_spacing = 25
+    else:
+        tick_spacing = 50
+
+    xticks = np.arange(mz_min, mz_max + 1, tick_spacing)
+    plt.xticks(xticks, fontsize=6)
+
+    plt.tight_layout()
+    plt.show()
+
 
 def main():
-    A = GenerateMatrix(NUMMOLECULES, WAVELENGTHS, MAXSIMILARITY, SPARSITY)
-    print(A)
-    #b = MatrixSimilarityChecker(A, MAXSIMILARITY)
-    #print(b)
-    #c = SpectraSimilarity(A[:, 0], A[:, 1])
-    #print("similarity of columns 0 and 1: ", c)
-    #x = GetSampleSpectrum(SAMPLECOMPLEXITY, MIXINGRESOLUTION, A, NUMMOLECULES, WAVELENGTHS)
-    #print (x)
-main()
+    #spectralMatrix = GenerateMatrix(NUMMOLECULES, NUMWAVELENGTHS, MAXSIMILARITY)
+    #print(spectralMatrix)
+    #u = GenerateSpectra(SPARSITY, NUMWAVELENGTHS)
+    #print(u)
+    s, selectedMolecules = GetSampleSpectrum(SAMPLECOMPLEXITY, spectralMatrix)
+    #print("spectrum: ", s)
+    noisySpectra = AddNoise(SNR, s)
+    #print("noisy spectra: ", noisySpectra)
+    PlotSpectra(noisySpectra)
+if __name__ == "__main__":
+    main()
+
