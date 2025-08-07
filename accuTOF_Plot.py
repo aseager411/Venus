@@ -366,22 +366,23 @@ def main():
 
     #available functionality:
 
+    #for a sample with multiple or single entries view the average spectrum with error bars
+    # warning: error bars may portray an innacurate image
+    df_raw1 = LoadRawMatrix("mass_spectra_individual.csv")
+    PlotMeanAndErrorSpectrum(df_raw1, short_name="Sulfur",
+                              title_prefix="Mean Spectrum - Individual")
+    
+    df_raw2 = LoadRawMatrix("mass_spectra_mixtures.csv")
+    PlotMeanAndErrorSpectrum(df_raw2, short_name="Coffee",
+                              title_prefix="Mean Spectrum - Mixture")
+    #
+
     #visualize the entire data set on a 2D heatmap
-    PlotSpectralHeatmap(samples, mixture_names, title="Heatmap of Normalized Spectra", mz_max=700.0)
+    PlotSpectralHeatmap(samples, mixture_names, title="Heatmap of Normalized Spectra", mz_max=400.0)
     #
 
     #visualize common peak counts in 1D space
     PlotPeakFrequency(spectralMatrix)
-    #
-
-    #for a sample with multiple entries view the average spectrum with error bars
-    df_raw1 = LoadRawMatrix("mass_spectra_individual.csv")
-    PlotMeanAndErrorSpectrum(df_raw1, short_name="1-naphthalenesulfonic acid",
-                              title_prefix="Mean Spectrum - Individual")
-    
-    df_raw2 = LoadRawMatrix("mass_spectra_mixtures.csv")
-    PlotMeanAndErrorSpectrum(df_raw2, short_name="B6M3",
-                              title_prefix="Mean Spectrum - Mixture")
     #
 
     #plot an overlay of two spectra

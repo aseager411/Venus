@@ -73,9 +73,10 @@ def main():
         snr_values=[3,5,8],
         max_complexity=25,
         N_per_complexity=3,
-        threshold=0.7,
+        threshold=0.8,
         noise=True,
-        score_fn=strict_recall_score
+        score_fn=strict_recall_score,
+        equal_weights=True
     )
 
 if __name__ == "__main__":

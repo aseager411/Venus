@@ -13,17 +13,15 @@ import matplotlib.pyplot as plt
 from sklearn.linear_model import Lasso
 from sklearn.metrics import r2_score
 
-from MS_Inversion_Toy import (
+from MS_Inversion import (
     Lasso_L1,
     f_beta,
-    L_Zero,
-    OneSampleTest,
-    NSampleTest
+    L_Zero
 )
 from ABESS import ABESS
 
 # Import the neural net classifier and loader
-from MS_Inversion_NN import SpectraClassifier
+from MS_Neural_Net import SpectraClassifier
 
 # -----------------------------
 # Data Loading & Preprocessing
@@ -119,16 +117,13 @@ def main():
     # --- Load mixture grouping for sampling ---
     A_mix, df2 = LoadRealMatrix('mass_spectra_mixtures.csv')
 
-    # get a sample (or combine a couple) from the mixtures DataFrame
-    spectra2, names2 = GetSample(['B6M3'], df2)
-
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     # Load matrices
     A_ind, df1 = LoadRealMatrix('mass_spectra_individual.csv')
     A_mix, df2 = LoadRealMatrix('mass_spectra_mixtures.csv')
 
     # Example mix
-    spectra2, names2 = GetSample(['B6M3'], df2)
+    spectra2, names2 = GetSample(['Coffee'], df2)
 
     print('Lasso predictions:')
     print(Lasso_Test(A_ind, spectra2, alpha=1000, df=df1))
@@ -137,7 +132,7 @@ def main():
     print(ABESS_Test(A_ind, spectra2, sMax=10, df=df1))
 
     print('NN predictions:')
-    nn_results = NN_Test(A_ind, spectra2, df1, 'spectra_classifier_recon.pth', device, threshold=0.0001)
+    nn_results = NN_Test(A_ind, spectra2, df1, 'spectra_classifier_recon.pth', device, threshold=0.5)
     for name, prob in nn_results:
         print(f"  {name}: {prob:.3f}")
 

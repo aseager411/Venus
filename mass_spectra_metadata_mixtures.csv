@@ -95,6 +95,15 @@ B6M2_37,B6M2,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/B6M2/B6
 B6M2_38,B6M2,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/B6M2/B6M2_250C_071725_Try6.txt
 B6M2_39,B6M2,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/B6M2/B6M2_250C_071725_Try4.txt
 B6M2_40,B6M2,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/B6M2/B6M2_250C_071725_Try5.txt
+Milk_1,Milk,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/Milk/Milk_250C_080525_Try1.txt
+Milk_2,Milk,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/Milk/Milk_250C_080525_Try3.txt
+Milk_3,Milk,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/Milk/Milk_250C_080525_Try2.txt
+Milk_4,Milk,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/Milk/Milk_250C_080525_Try5.txt
+Milk_5,Milk,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/Milk/Milk_250C_080525_Try4.txt
+Drink mix_1,DrinkMix,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/DrinkMix/Drink mix_250C_080525_Try5.txt
+Drink mix_2,DrinkMix,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/DrinkMix/Drink mix_250C_080525_Try4.txt
+Drink mix_4,DrinkMix,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/DrinkMix/Drink mix_250C_080525_Try3.txt
+Drink mix_6,DrinkMix,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/DrinkMix/Drink mix_250C_080525_Try1.txt
 B7M1_1,B7M1,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/B7M1/B7M1_250C_071925_Try19.txt
 B7M1_2,B7M1,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/B7M1/B7M1_250C_071925_Try18.txt
 B7M1_3,B7M1,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/B7M1/B7M1_250C_071925_Try20.txt
@@ -118,6 +127,11 @@ B7M1_20,B7M1,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/B7M1/B7
 B5M2_1,B5M2,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/B5M2/B5M2_Try3.txt
 B5M2_2,B5M2,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/B5M2/B5M2_Try2.txt
 B5M2_3,B5M2,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/B5M2/B5M2_Try1.txt
+Coffee_1,Coffee,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/Coffee/Coffee_250C_080525_Try3.txt
+Coffee_2,Coffee,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/Coffee/Coffee_250C_080525_Try2.txt
+Coffee_3,Coffee,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/Coffee/Coffee_250C_080525_Try1.txt
+Coffee_4,Coffee,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/Coffee/Coffee_250C_080525_Try5.txt
+Coffee_5,Coffee,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/Coffee/Coffee_250C_080525_Try4.txt
 B6M1_1,B6M1,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/B6M1/B6M1_250C_071725_Try5.txt
 B6M1_2,B6M1,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/B6M1/B6M1_250C_071725_Try4.txt
 B6M1_3,B6M1,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/B6M1/B6M1_250C_071725_Try3.txt
@@ -128,6 +142,11 @@ B7M3_2,B7M3,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/B7M3/B7M
 B7M3_3,B7M3,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/B7M3/B7M3_250C_071925_Try1.txt
 B7M3_4,B7M3,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/B7M3/B7M3_250C_071925_Try4.txt
 B7M3_5,B7M3,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/B7M3/B7M3_250C_071925_Try5.txt
+Whitegrape juice_1,GrapeJuice,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/GrapeJuice/Whitegrape juice_250C_080525_Try1.txt
+Whitegrape juice_2,GrapeJuice,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/GrapeJuice/Whitegrape juice_250C_080525_Try3.txt
+Whitegrape juice_4,GrapeJuice,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/GrapeJuice/Whitegrape juice_250C_080525_Try6.txt
+Whitegrape juice_5,GrapeJuice,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/GrapeJuice/Whitegrape juice_250C_080525_Try5.txt
+Whitegrape juice_6,GrapeJuice,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/GrapeJuice/Whitegrape juice_250C_080525_Try4.txt
 B7M2_1,B7M2,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/B7M2/B7M2_250C_071925_Try17.txt
 B7M2_2,B7M2,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/B7M2/B7M2_250C_071925_Try16.txt
 B7M2_3,B7M2,/Users/alexseager/Desktop/Summer_Work_2025/MS_Data/Mixtures/B7M2/B7M2_250C_071925_Try14.txt

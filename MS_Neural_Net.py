@@ -99,22 +99,20 @@ def load_and_prepare_data(
 
 
 #mix generating helper
-def generate_mixture_dataset(spectral_matrix, N, min_complexity=1, max_complexity=25,
-                              equal_weights=True, snr=None, add_noise=True, seed=None):
-
+def generate_mixture_dataset(
+    spectral_matrix,
+    N,
+    min_complexity=1,
+    max_complexity=25,
+    equal_weights=True,
+    snr=None,
+    add_noise=True,
+    seed=None
+):
     """
     Generate synthetic mixtures using a consistent pipeline for training or testing.
 
-    Args:
-        spectral_matrix: (num_bins × num_molecules)
-        N: number of mixtures per complexity level
-        min_complexity, max_complexity: range of mixture sizes
-        equal_weights: if True, all molecules have equal concentration
-        seed: for reproducibility
-
-    Returns:
-        X: spectra matrix [num_samples × num_bins]
-        Y: binary labels [num_samples × num_molecules]
+    Now with per‐sample L2 normalization of each mixture spectrum.
     """
     if seed is not None:
         np.random.seed(seed)
@@ -123,51 +121,58 @@ def generate_mixture_dataset(spectral_matrix, N, min_complexity=1, max_complexit
     mixtures = []
     labels = []
 
+    def normalize(s):
+        norm = np.linalg.norm(s)
+        return s / norm if norm > 0 else s
+
     for complexity in range(min_complexity, max_complexity + 1):
 
-        # Ensure coverage of all molecules when complexity == 1
+        # Complexity == 1: ensure coverage of every singleton
         if complexity == 1:
             mol_indices_list = np.arange(num_molecules)
             np.random.shuffle(mol_indices_list)
             for idx in mol_indices_list:
-                spectrum = spectral_matrix[:, idx]
-                label = np.zeros(num_molecules)
-                label[idx] = 1.0
-                mixtures.append(spectrum)
-                labels.append(label)
+                s = spectral_matrix[:, idx].copy()
+                if add_noise and snr is not None:
+                    s = AddNoise(snr, s)
+                mixtures.append(normalize(s))
+                lbl = np.zeros(num_molecules)
+                lbl[idx] = 1.0
+                labels.append(lbl)
 
-            # Add extra random ones if N > num_molecules
+            # Extra random singletons if N > num_molecules
             for _ in range(N - num_molecules):
                 idx = np.random.choice(num_molecules)
-                spectrum = spectral_matrix[:, idx]
+                s = spectral_matrix[:, idx].copy()
                 if add_noise and snr is not None:
-                    spectrum = AddNoise(snr, spectrum)
-                label = np.zeros(num_molecules)
-                label[idx] = 1.0
-                mixtures.append(spectrum)
-                labels.append(label)
+                    s = AddNoise(snr, s)
+                mixtures.append(normalize(s))
+                lbl = np.zeros(num_molecules)
+                lbl[idx] = 1.0
+                labels.append(lbl)
 
-            continue  # skip rest of loop for complexity == 1
+            continue
 
-        # Standard random mixtures for complexity > 1
+        # Complexity > 1: random mixtures
         for _ in range(N):
             mol_indices = np.random.choice(num_molecules, size=complexity, replace=True)
-
             if equal_weights:
                 weights = np.ones(complexity) / complexity
             else:
                 weights = np.random.dirichlet(np.ones(complexity))
 
-            spectrum = np.sum(spectral_matrix[:, mol_indices] * weights, axis=1)
+            s = np.sum(spectral_matrix[:, mol_indices] * weights, axis=1)
             if add_noise and snr is not None:
-                spectrum = AddNoise(snr, spectrum)
-            label = np.zeros(num_molecules)
-            label[mol_indices] = 1.0
+                s = AddNoise(snr, s)
 
-            mixtures.append(spectrum)
-            labels.append(label)
+            mixtures.append(normalize(s))
+
+            lbl = np.zeros(num_molecules)
+            lbl[mol_indices] = 1.0
+            labels.append(lbl)
 
     return np.stack(mixtures), np.stack(labels)
+
 
 #noise helper
 def AddNoise(snr, spectra):
@@ -334,7 +339,7 @@ def train_with_recon(model, dataloader, optimizer, device,
 def evaluate_model_with_noise_levels(model, spectral_matrix, molecule_names, device,
                                      snr_values=[3, 5, 8], max_complexity=25, N_per_complexity=20,
                                      threshold=0.8, score_fn=None,
-                                     noise=True):
+                                     noise=True, equal_weights=True):
     if score_fn is None:
         score_fn = lambda true_idxs, pred_idxs: f_beta(true_idxs, pred_idxs, beta=1)
 
@@ -356,7 +361,7 @@ def evaluate_model_with_noise_levels(model, spectral_matrix, molecule_names, dev
                 N=N_per_complexity,
                 min_complexity=complexity,
                 max_complexity=complexity,
-                equal_weights=True,
+                equal_weights=equal_weights,
                 snr=snr,
                 add_noise=noise,
                 seed=None
@@ -472,7 +477,7 @@ def main():
     metadata_file = "mass_spectra_metadata_individual.csv"
 
         # === Training Data ===
-    N_MIXTURES = 25000
+    N_MIXTURES = 50000
     MAX_COMPLEXITY = 25
 
 
@@ -491,7 +496,7 @@ def main():
         N=N_MIXTURES,
         min_complexity=1,
         max_complexity=MAX_COMPLEXITY,
-        equal_weights=True,
+        equal_weights=False,
         seed=1337  # different from training
     )
 
@@ -573,7 +578,7 @@ def main():
 
     # === Evaluation ===
     #evaluate_on_fixed_test_set(model, X_test, Y_test, molecule_names, device=device)
-    evaluate_model_with_noise_levels(model, spectral_matrix=spectral_matrix, molecule_names=molecule_names, device=device, max_complexity=25, noise = True)
+    evaluate_model_with_noise_levels(model, spectral_matrix=spectral_matrix, molecule_names=molecule_names, device=device, max_complexity=25, noise = True, equal_weights=False)
 
 if __name__ == "__main__":
     main()
