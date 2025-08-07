@@ -24,7 +24,7 @@ def LoadRealMatrix(csv_path, numMolecules=None, numWavelengths=None, normalize=T
     df_full = pd.read_csv(csv_path, index_col=0)
 
     # Truncate the mz/wavelength range
-    df = df_full.loc[51:450]
+    df = df_full.loc[50:450]
 
     # Derive “short” names by stripping off the trailing “_1”, “_2”, etc.
     # e.g. “alanine_1” → “alanine”

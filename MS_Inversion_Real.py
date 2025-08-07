@@ -60,30 +60,36 @@ import pandas as pd
 import numpy as np
 
 # Import and process spectral matrix, averaging duplicate molecule columns
+# import data from csv for testing
 def LoadRealMatrix(csv_path, numMolecules=None, numWavelengths=None, normalize=True):
+    # Read the full matrix; first column is the bin index
     df_full = pd.read_csv(csv_path, index_col=0)
 
-    # Truncate wavelength range
-    df = df_full.loc[50:787]
+    # Truncate the mz/wavelength range
+    df = df_full.loc[50:450]
 
-    # Average duplicate molecule columns (by name), using updated groupby syntax
-    grouped_df = df.T.groupby(df.columns).mean().T
+    # Derive “short” names by stripping off the trailing “_1”, “_2”, etc.
+    # e.g. “alanine_1” → “alanine”
+    short_names = df.columns.str.rsplit("_", n=1).str[0]
 
-    # Optional truncation
+    # Group columns by that short name and take the mean
+    grouped_df = df.T.groupby(short_names).mean().T
+
+    # Optional truncation of rows/columns
     if numWavelengths is not None:
         grouped_df = grouped_df.iloc[:numWavelengths, :]
     if numMolecules is not None:
         grouped_df = grouped_df.iloc[:, :numMolecules]
 
-    # Convert to matrix
+    # Convert to numpy array
     A = grouped_df.values
 
+    # Column‐wise normalization (if requested)
     if normalize:
         norms = np.linalg.norm(A, axis=0)
         norms[norms == 0] = 1
         A = A / norms
 
-    print("Molecules used:", list(grouped_df.columns))
     return A, grouped_df
 
 
@@ -211,7 +217,7 @@ def main():
     file = "mass_spectra_individual.csv"
     A, df = LoadRealMatrix(file)
 
-    Model_Test(A, 25, noise = True, score_fn=strict_recall_score, sampleRange = 25)
+    Model_Test(A, 0.001, noise = True, score_fn=strict_recall_score, sampleRange = 25)
     # spectra, trueMolecules = GetSampleSpectrum(2, A)
     # print("true molecules: ", trueMolecules)
     # predictedMolecules = ABESS(A, spectra, 10)

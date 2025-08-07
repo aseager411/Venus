@@ -18,7 +18,7 @@ def LoadAvgMatrix(csv_path, numMolecules=None, numWavelengths=None, normalize=Tr
     df_full = pd.read_csv(csv_path, index_col=0)
 
     # Truncate the mz/wavelength range
-    df = df_full.loc[51:450]
+    df = df_full.loc[50:700]
 
     # Derive “short” names by stripping off the trailing “_1”, “_2”, etc.
     # e.g. “alanine_1” → “alanine”
@@ -363,12 +363,12 @@ def main():
     samples, df2 = LoadAvgMatrix(mixtures)
     mixture_names = df2.columns.tolist()
 
-    #PlotSpectralHeatmap(spectralMatrix, individual_names, title="Heatmap of Normalized Spectra")
+    PlotSpectralHeatmap(samples, mixture_names, title="Heatmap of Normalized Spectra", mz_max=700.0)
 
-    PlotPeakFrequency(spectralMatrix)
-    df_raw1 = LoadRawMatrix("mass_spectra_individual.csv")
-    PlotMeanAndErrorSpectrum(df_raw1, short_name="1-naphthalenesulfonic acid",
-                             title_prefix="Mean Spectrum - Individual")
+    # PlotPeakFrequency(spectralMatrix)
+    # df_raw1 = LoadRawMatrix("mass_spectra_individual.csv")
+    # PlotMeanAndErrorSpectrum(df_raw1, short_name="1-naphthalenesulfonic acid",
+    #                          title_prefix="Mean Spectrum - Individual")
     
     # df_raw2 = LoadRawMatrix("mass_spectra_mixtures.csv")
     # PlotMeanAndErrorSpectrum(df_raw2, short_name="B6M3",

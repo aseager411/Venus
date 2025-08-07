@@ -332,7 +332,7 @@ def Model_Test(spectralMatrix, a, noise=True, score_fn=f_beta, sampleRange = 20)
         (snr, j, k)
         for snr in snr_values
         for j in range(1, sampleRange + 1)
-        for k in range(1)  # increase for repeats
+        for k in range(3)  # increase for repeats
     ]
 
     # Helper function
@@ -342,7 +342,7 @@ def Model_Test(spectralMatrix, a, noise=True, score_fn=f_beta, sampleRange = 20)
 
         noisySpectra = AddNoise(snr, s) if noise else s
         #Change model here
-        x_sol = ABESS(spectralMatrix, noisySpectra, sMax = 25, exhaustive_k = True)
+        x_sol = Lasso_L1(spectralMatrix, noisySpectra, a) #sMax = 25, exhaustive_k = True)
 
         #change required concentration here
         gamma = 0.001
@@ -376,7 +376,7 @@ def Model_Test(spectralMatrix, a, noise=True, score_fn=f_beta, sampleRange = 20)
 
     ax.set_xlabel('Sample Complexity (number of molecules mixed)')
     ax.set_ylabel('Recall')
-    ax.set_title('Lasso with CV Recovery Score vs. Sample Complexity')
+    ax.set_title('Lasso Recovery Score vs. Sample Complexity')
 
     all_j_values = [j for (_, j, _) in tasks]
     max_j = max(all_j_values)

@@ -38,33 +38,45 @@ def load_and_prepare_data(
     max_complexity=25,
     seed=42,
     noise=True,
-    normalize_library=True
+    normalize_library=True,
+    mz_min=50,
+    mz_max=450,
 ):
-    # 1) Read in the raw matrix (rows are runs like "Alanine_1", cols are m/z bins)
-    X_raw = pd.read_csv(spectra_path, index_col=0).T  # shape: (runs × bins)
+    # 1) Read in the full library matrix (bins × runs)
+    df_full = pd.read_csv(spectra_path, index_col=0)  # index = m/z
 
-    # 2) Load metadata and align to the runs
+    # 2) Truncate the m/z window
+    #    keeps only rows with 50 ≤ m/z ≤ 450
+    df_window = df_full.loc[mz_min:mz_max]
+
+    # 3) Transpose: now rows are runs (e.g. "alanine_1"), columns are bins 50–450
+    X_raw = df_window.T  # shape: (runs × selected_bins)
+
+    # 4) Load metadata and align to the runs
     meta = pd.read_csv(metadata_path).set_index("molecule")
     meta = meta.reindex(X_raw.index)
 
-    # 3) Build grouping key
+    # 5) Build grouping key (short_molecule or strip "_N")
     if "short_molecule" in meta.columns:
         grouping = meta["short_molecule"]
     else:
-        grouping = X_raw.index.str.rsplit("_", n=1).str[0]
+        grouping = X_raw.index.str.rsplit("_", 1).str[0]
 
-    # 4) Average replicates for each base molecule
-    X_avg           = X_raw.groupby(grouping).mean().sort_index()
-    molecule_names  = X_avg.index.tolist()
-    spectral_matrix = X_avg.values.T   # shape: (num_bins, num_molecules)
+    # 6) Average replicates per molecule
+    X_avg = X_raw.groupby(grouping).mean().sort_index()  
+      # shape: (unique_molecules × selected_bins)
+    molecule_names = X_avg.index.tolist()
 
-    # 5) Optionally normalize each library column to unit L2 norm
+    # 7) Convert to numpy matrix (bins × molecules)
+    spectral_matrix = X_avg.values.T  # shape: (num_selected_bins, num_molecules)
+
+    # 8) (Optional) Normalize each column to unit ℓ₂ norm
     if normalize_library:
-        norms = np.linalg.norm(spectral_matrix, axis=0)
+        norms = np.linalg.norm(spectral_matrix, axis=0, keepdims=True)
         norms[norms == 0] = 1.0
         spectral_matrix = spectral_matrix / norms
 
-    # 6) Generate synthetic mixtures
+    # 9) Build your synthetic mixtures
     X_mixed, Y_mixed = generate_mixture_dataset(
         spectral_matrix,
         N=N_Mixtures,
@@ -77,9 +89,11 @@ def load_and_prepare_data(
     )
 
     print(f" Molecules in library: {spectral_matrix.shape[1]}")
+    print(f" Selected bins: {spectral_matrix.shape[0]} (m/z {mz_min}–{mz_max})")
     print(f" Total generated mixtures: {len(X_mixed)}")
 
     return X_mixed, Y_mixed, molecule_names, spectral_matrix
+
 
 
 #mix generating helper
