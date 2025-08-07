@@ -1,9 +1,8 @@
 # Author: Alex Seager
-# Last Version: 7/8/25
+# Last Version: 8/7/25
 #
-# Description: I am attempting to invert MS data from combinations and recover which molecules
-# from a library contributed to the spectral signal. I explore many methods including Lasso,
-# ABESS, L0, and a trained neural network.
+# Description: Test the inverse methods on lab mixture samples
+# methods now include Lasso,right ABESS, L0, L1, and a trained neural network.
 
 import numpy as np
 import pandas as pd
@@ -69,7 +68,7 @@ def GetSample(molecule_names, spectral_df):
 # -----------------------------
 def Lasso_Test(matrix, spectra, alpha, df):
     x_hat = Lasso_L1(matrix, spectra, alpha)
-    thresh = 1e-3
+    thresh = 1e-4
     return [(df.columns[i], x_hat[i]) for i in range(len(x_hat)) if abs(x_hat[i])>thresh]
 
 
@@ -100,6 +99,8 @@ def NN_Test(matrix, spectra, df, checkpoint_path, device, threshold=0.5):
     model.eval()
     with torch.no_grad():
         inp = torch.tensor(spectra, dtype=torch.float32).unsqueeze(0).to(device)
+        # normalize
+        inp = (inp / (inp.norm(dim=1, keepdim=True) + 1e-6))
         logits = model(inp)
         probs = torch.sigmoid(logits).cpu().numpy().ravel()
     results = [(df.columns[i], float(probs[i])) for i in range(len(probs)) if probs[i]>=threshold]
@@ -118,7 +119,7 @@ def main():
     # --- Load mixture grouping for sampling ---
     A_mix, df2 = LoadRealMatrix('mass_spectra_mixtures.csv')
 
-    # Create an example synthetic sample from the mixtures DataFrame
+    # get a sample (or combine a couple) from the mixtures DataFrame
     spectra2, names2 = GetSample(['B6M3'], df2)
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -130,13 +131,13 @@ def main():
     spectra2, names2 = GetSample(['B6M3'], df2)
 
     print('Lasso predictions:')
-    print(Lasso_Test(A_ind, spectra2, alpha=1e5, df=df1))
+    print(Lasso_Test(A_ind, spectra2, alpha=1000, df=df1))
 
     print('ABESS predictions:')
     print(ABESS_Test(A_ind, spectra2, sMax=10, df=df1))
 
     print('NN predictions:')
-    nn_results = NN_Test(A_ind, spectra2, df1, 'spectra_classifier_recon.pth', device, threshold=0.8)
+    nn_results = NN_Test(A_ind, spectra2, df1, 'spectra_classifier_recon.pth', device, threshold=0.0001)
     for name, prob in nn_results:
         print(f"  {name}: {prob:.3f}")
 

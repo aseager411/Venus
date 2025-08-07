@@ -363,136 +363,41 @@ def main():
     samples, df2 = LoadAvgMatrix(mixtures)
     mixture_names = df2.columns.tolist()
 
+
+    #available functionality:
+
+    #visualize the entire data set on a 2D heatmap
     PlotSpectralHeatmap(samples, mixture_names, title="Heatmap of Normalized Spectra", mz_max=700.0)
+    #
 
-    # PlotPeakFrequency(spectralMatrix)
-    # df_raw1 = LoadRawMatrix("mass_spectra_individual.csv")
-    # PlotMeanAndErrorSpectrum(df_raw1, short_name="1-naphthalenesulfonic acid",
-    #                          title_prefix="Mean Spectrum - Individual")
+    #visualize common peak counts in 1D space
+    PlotPeakFrequency(spectralMatrix)
+    #
+
+    #for a sample with multiple entries view the average spectrum with error bars
+    df_raw1 = LoadRawMatrix("mass_spectra_individual.csv")
+    PlotMeanAndErrorSpectrum(df_raw1, short_name="1-naphthalenesulfonic acid",
+                              title_prefix="Mean Spectrum - Individual")
     
-    # df_raw2 = LoadRawMatrix("mass_spectra_mixtures.csv")
-    # PlotMeanAndErrorSpectrum(df_raw2, short_name="B6M3",
-    #                          title_prefix="Mean Spectrum - Mixture")
-    
+    df_raw2 = LoadRawMatrix("mass_spectra_mixtures.csv")
+    PlotMeanAndErrorSpectrum(df_raw2, short_name="B6M3",
+                              title_prefix="Mean Spectrum - Mixture")
+    #
 
-    # # Ensure matching order between df1.columns and metadata
-    # col_to_group = dict(zip(meta["molecule"], meta["group"]))
-    # group_labels = [col_to_group.get(name, "Unknown") for name in individual_names]
-
-    # # PCA plot
-    # #plot_pca_by_group(spectralMatrix, group_labels, individual_names)   
-    # plot_umap_by_group(spectralMatrix, group_labels, individual_names)
-
-
-
-
-    ### truth vs model guess overlay pro ser thr
-
-    # spectra1, _ = GetSample(["Pro", "Ser", "Thr"], df1)
-    # spectra2, _ = GetSample(["ProSerThr"], df2)
-    # #ABESS guess
-    # spectra3, _ = GetSample(['N-methylpyrrole', '246-Trimethylpyridine', 'Nile red', 'Methylcyclopentane'], df1)
-    # #LASSO guess
-    # spectra4, _ = GetSample(["Pro", "Thr"], df1)
-    # PlotMultipleSpectra(
-    #     [spectra2, spectra4],
-    #     labels=["Pro, Ser, Thr", "guessed combo"],
-    #     title="Overlay of true and closest match Spectra"
-    # )
-
-    ### truth vs model guess overlay Ala, Arg, Glu, Gly
-
-    # spectra1, _ = GetSample(["Ala", "Arg", "Glu", "Gly"], df1)
-    # spectra2, _ = GetSample(["AlaArgGluGly"], df2)
-    # #ABESS guess
-    # spectra3, _ = GetSample({'N-methylpyrrole': 4, '246-Trimethylpyridine': 9, 'Nile red': 21, 'Methylcyclopentane': 22, 'Cyclopentane': 30}, df1)
-    # #LASSO guess
-    # spectra4, _ = GetSample(['Cyclopentane', 'Ala', 'Gly', 'Pro', 'P2'], df1)
-    # PlotMultipleSpectra(
-    #     [spectra2, spectra4],
-    #     labels=["Pro, Ser, Thr", "guessed combo"],
-    #     title="Overlay of true and closest match Spectra"
-    # )
-
-
-    ###truth vs model guess overlay 1-chloro-3-methoxybenzene + Benzenesulfonic acid + Dodecyltrimethylammonium bromide
-
-    # spectra2, _ = GetSample(["1-chloro-3-methoxybenzene + Benzenesulfonic acid + Dodecyltrimethylammonium bromide"], df2)
+    #plot an overlay of two spectra
+    # Ex: the true spectrum of your mixture
+    spectra1, _ = GetSample(["ProSerThr"], df2) #use df2 for mixtures
+    #Ex: A models guess
+    spectra2, _ = GetSample(["Pro", "Thr"], df1) #use df1 for individual molecules
+    #or pass with concentrations
+    spectra3, _ = GetSample([('Pro', 1.3282611345263897), ('Thr', 0.011404128270954328)], df1)
    
-    # #LASSO guess
-    # spectra4, _ = GetSample([('Benzenesulfonic acid', 0.01466872009225554), ('1-Chloro-3-methoxybenzene', 0.8038279654858083), ('Dodecanoic acid', 0.07637775898494034)], df1)
-    # PlotMultipleSpectra(
-    #     [spectra2, spectra4],
-    #     labels=["sample", "guessed combo"],
-    #     title="Overlay of true and closest match Spectra"
-    # )
-
-
-
-    # ### Truth vs model guess overlay 1-chloro-3-methoxybenzene + Benzenesulfonic acid + Dodecyltrimethylammonium bromide
-    # #incorrect guesses:
-    # spectra1, _ = GetSample([('Ala', 0.011404128270954328), ('Phenanthrene', 0.2217878523929781)], df1)
-    # #not identified by model:
-    # spectra2, _ = GetSample(["Benzenesulfonic acid"], df1)
-
-    # #true sample
-    # spectra3, _ = GetSample(["Benzenesulfonic acid + DPH(1,6-Diphenyl-1,3,5-hexatriene) + N-methypyrrole + Pyrene"], df2)
-   
-    # #LASSO guess
-    # spectra4, _ = GetSample([('N-methylpyrrole', 1.3282611345263897), ('Ala', 0.011404128270954328), ('Pyrene', 0.28486107747102996), ('Phenanthrene', 0.2217878523929781), ('16-diphenyl-135-hexatriene', 0.11069791839345598)], df1)
-    # PlotMultipleSpectra(
-    #     [spectra3, spectra4],
-    #     labels=["sample (Benzenesulfonic acid + DPH(1,6-Diphenyl-1,3,5-hexatriene) + N-methypyrrole + Pyrene)", "guessed combo: N-methylpyrrole, Ala, Pyrene, Phenanthrene, 16-diphenyl-135-hexatriene"],
-    #     title="Overlay of true and closest match Spectra"
-    # )
-    # #what the model missed vs added
-    # PlotMultipleSpectra(
-    #     [spectra1, spectra2],
-    #     labels=["false positives: Ala, Phenanthrene", "false negatives: Benzenesulfonic acid"],
-    #     title="Overlay of false positives and negatives"
-    # )
-    
-    # spectra, names = GetSample(["dodeca", "mcyclopen", "Gly", "Ala", "P2", "Benzene", "d-gluc", ], df1)
-    # PlotSingleSpectra(spectra, title=f"Environmental Sample")
-
-    # spectra, names = GetSample(['N-methylpyrrole', '246-Trimethylpyridine', 'Nile red', 'Methylcyclopentane'], df1)
-    # PlotSingleSpectra(spectra, title=f"Artificial Sample: {' + '.join(names)}")
-
-    # spectra, names = GetSample(["Sulfur"], df1)
-    # PlotSingleSpectra(spectra, title=f"Sample: {' + '.join(names)}")
-    
-    # spectra1, _ = GetSample(["Dodeca"], df1)
-    # spectra2, _ = GetSample(["undeca"], df1)
-    # spectra3, _ = GetSample(["tridodeca"], df1)
-    
-    # # spectra1, _ = GetSample([('Ala', 0.011404128270954328), ('Phenanthrene', 0.2217878523929781)], df1)
-    # # #not identified by model:
-    # # spectra2, _ = GetSample(["Benzenesulfonic acid"], df1)
-
-    # # #true sample
-    # spectra3, _ = GetSample(["Benzenesulfonic acid + DPH(1,6-Diphenyl-1,3,5-hexatriene) + N-methypyrrole + Pyrene"], df2)
-   
-    # # #LASSO guess
-    # # spectra4, _ = GetSample([('N-methylpyrrole', 1.3282611345263897), ('Ala', 0.011404128270954328), ('Pyrene', 0.28486107747102996), ('Phenanthrene', 0.2217878523929781), ('16-diphenyl-135-hexatriene', 0.11069791839345598)], df1)
-    # PlotMultipleSpectra(
-    #     [spectra1, spectra2, spectra 3],
-    #     labels=["sample (Benzenesulfonic acid + DPH(1,6-Diphenyl-1,3,5-hexatriene) + N-methypyrrole + Pyrene)", "guessed combo: N-methylpyrrole, Ala, Pyrene, Phenanthrene, 16-diphenyl-135-hexatriene"],
-    #     title="Overlay of true and closest match Spectra"
-    # )
-    # # spectra, names = GetSample(["1-chloro-3-methoxybenzene + Benzenesulfonic acid + Dodecyltrimethylammonium bromide"], df2)
-    # # PlotSingleSpectra(spectra, title=f"Artificial Sample: {' + '.join(names)}")
-
-    # spectra, names = GetSample(["Benzene + Dodecyltrimethylammonium bromide"], df2)
-    # PlotSingleSpectra(spectra, title=f"Artificial Sample: {' + '.join(names)}")
-
-    # spectra, names = GetSample(["Benzenesulfonic acid + DPH(1,6-Diphenyl-1,3,5-hexatriene) + N-methypyrrole + Pyrene"], df2)
-    # PlotSingleSpectra(spectra, title=f"Artificial Sample: {' + '.join(names)}")
-
-    # spectra, names = GetSample(["AlaArg"], df2)
-    # PlotSingleSpectra(spectra, title=f"Real Sample: {' + '.join(names)}")
-
-    #PlotSpectra(spectralMatrix[:, 0])
-    #PlotSpectra(samples[:, 0])
+    PlotMultipleSpectra(
+        [spectra1, spectra2],
+        labels=["Pro, Ser, Thr", "guessed combo"],
+        title="Overlay of true and closest match Spectra"
+    )
+    #
 
 if __name__ == "__main__":
     main()
